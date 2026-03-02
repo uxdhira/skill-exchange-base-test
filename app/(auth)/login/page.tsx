@@ -1,7 +1,10 @@
-import LoginForm from "@/components/shadcn-space/blocks/login-01/login";
-
+import LoginForm from "@/components/blocks/login/login";
+import { Metadata } from "next";
+export const metadata: Metadata = {
+  title: "Login",
+};
 const Page = () => {
-  return <LoginForm/>;
+  return <LoginForm />;
 };
 
 export default Page;

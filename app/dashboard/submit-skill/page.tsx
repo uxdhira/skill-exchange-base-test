@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import {
   Card,
@@ -9,10 +9,10 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
-} from "@/components/ui/card1";
-import { Button } from "@/components/ui/button1";
-import { Input } from "@/components/ui/input1";
-import { Label } from "@/components/ui/label1";
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -25,22 +25,53 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 import { CATEGORIES } from "@/data/mockData";
 import { Upload, ArrowLeft } from "lucide-react";
+import { useGlobalState } from "@/hooks/useGlobalState";
+import { Skill } from "@/types";
+import { toast } from "sonner";
 
 export default function SubmitSkillPage() {
   const router = useRouter(); // Next.js router
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    category: '',
-    skillLevel: 'Beginner',
-    location: '',
-    availability: '',
-  });
+  const { addSkill, user, mockSkillData } = useGlobalState();
+  const searchParams = useSearchParams();
+  const isEdit = searchParams.get("edit") === "true";
+
+  const skillId = searchParams.get("id");
+
+  const skillToEdit = mockSkillData.find((s) => s.id === skillId);
+
+  const [formData, setFormData] = useState(() => ({
+    title: skillToEdit?.title || "",
+    description: skillToEdit?.description || "",
+    category: skillToEdit?.category || "",
+    skillLevel: skillToEdit?.skillLevel || "Beginner",
+    location: skillToEdit?.location || "",
+    availability: skillToEdit?.availability || "",
+  }));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    alert('Skill submitted successfully! (This is a demo)');
-    router.push('/dashboard/my-skills');
+    // alert("Skill submitted successfully! (This is a demo)");
+    const newSkill: Skill = {
+      id: crypto.randomUUID(), // better than Math.random
+      title: formData.title,
+      description: formData.description,
+      category: formData.category,
+      skillLevel: formData.skillLevel,
+      location: formData.location,
+      availability: formData.availability,
+      userId: "user-1", // Assuming current user ID is "user-1"
+      status: "accepted",
+      userName: `${user?.name}`,
+      createdAt: new Date().toISOString(),
+      userRating: 4.8,
+    };
+    addSkill(newSkill);
+    toast(
+      "Your skill has been created and accepted from our Team. Happy Learning!",
+      { position: "top-center" },
+    );
+
+    router.push("/dashboard/skills");
   };
 
   const handleChange = (field: string, value: string) => {
@@ -56,9 +87,12 @@ export default function SubmitSkillPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Add New Skill</CardTitle>
+          <CardTitle className="text-2xl">
+            {isEdit ? "Edit Your Skill" : "Add New Skill"}
+          </CardTitle>
           <CardDescription>
-            Share your expertise with the community and find someone to exchange skills with
+            Share your expertise with the community and find someone to exchange
+            skills with
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -70,10 +104,12 @@ export default function SubmitSkillPage() {
                 id="title"
                 placeholder="e.g., Web Design Basics, Spanish Tutoring"
                 value={formData.title}
-                onChange={(e) => handleChange('title', e.target.value)}
+                onChange={(e) => handleChange("title", e.target.value)}
                 required
               />
-              <p className="text-sm text-gray-500">Choose a clear, descriptive title</p>
+              <p className="text-sm text-gray-500">
+                Choose a clear, descriptive title
+              </p>
             </div>
 
             {/* Description */}
@@ -83,23 +119,31 @@ export default function SubmitSkillPage() {
                 id="description"
                 placeholder="Describe what you'll teach, who it's for, and what students will learn..."
                 value={formData.description}
-                onChange={(e) => handleChange('description', e.target.value)}
+                onChange={(e) => handleChange("description", e.target.value)}
                 rows={5}
                 required
               />
-              <p className="text-sm text-gray-500">Provide detailed information about your skill</p>
+              <p className="text-sm text-gray-500">
+                Provide detailed information about your skill
+              </p>
             </div>
 
             {/* Category */}
             <div className="space-y-2">
               <Label htmlFor="category">Category *</Label>
-              <Select value={formData.category} onValueChange={(value) => handleChange('category', value)} required>
+              <Select
+                value={formData.category}
+                onValueChange={(value) => handleChange("category", value)}
+                required
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {CATEGORIES.map(category => (
-                    <SelectItem key={category} value={category}>{category}</SelectItem>
+                  {CATEGORIES.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -108,22 +152,34 @@ export default function SubmitSkillPage() {
             {/* Skill Level */}
             <div className="space-y-2">
               <Label>Skill Level *</Label>
-              <RadioGroup value={formData.skillLevel} onValueChange={(value) => handleChange('skillLevel', value)}>
+              <RadioGroup
+                value={formData.skillLevel}
+                onValueChange={(value) => handleChange("skillLevel", value)}
+              >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="Beginner" id="beginner" />
-                  <Label htmlFor="beginner" className="font-normal cursor-pointer">
+                  <Label
+                    htmlFor="beginner"
+                    className="font-normal cursor-pointer"
+                  >
                     Beginner - Just starting out
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="Intermediate" id="intermediate" />
-                  <Label htmlFor="intermediate" className="font-normal cursor-pointer">
+                  <Label
+                    htmlFor="intermediate"
+                    className="font-normal cursor-pointer"
+                  >
                     Intermediate - Some experience
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="Expert" id="expert" />
-                  <Label htmlFor="expert" className="font-normal cursor-pointer">
+                  <Label
+                    htmlFor="expert"
+                    className="font-normal cursor-pointer"
+                  >
                     Expert - Advanced level
                   </Label>
                 </div>
@@ -137,19 +193,23 @@ export default function SubmitSkillPage() {
                 id="location"
                 placeholder="City, State or 'Online'"
                 value={formData.location}
-                onChange={(e) => handleChange('location', e.target.value)}
+                onChange={(e) => handleChange("location", e.target.value)}
               />
-              <p className="text-sm text-gray-500">Where will you offer this skill?</p>
+              <p className="text-sm text-gray-500">
+                Where will you offer this skill?
+              </p>
             </div>
 
             {/* Availability */}
             <div className="space-y-2">
-              <Label htmlFor="availability">Availability / Time Slots (Optional)</Label>
+              <Label htmlFor="availability">
+                Availability / Time Slots (Optional)
+              </Label>
               <Input
                 id="availability"
                 placeholder="e.g., Weekday evenings, Weekend mornings"
                 value={formData.availability}
-                onChange={(e) => handleChange('availability', e.target.value)}
+                onChange={(e) => handleChange("availability", e.target.value)}
               />
             </div>
 
@@ -158,7 +218,9 @@ export default function SubmitSkillPage() {
               <Label>Upload Images / Samples (Optional)</Label>
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors cursor-pointer">
                 <Upload className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                <p className="text-sm text-gray-600 mb-1">Click to upload or drag and drop</p>
+                <p className="text-sm text-gray-600 mb-1">
+                  Click to upload or drag and drop
+                </p>
                 <p className="text-xs text-gray-500">PNG, JPG up to 10MB</p>
               </div>
             </div>
@@ -168,7 +230,12 @@ export default function SubmitSkillPage() {
               <Button type="submit" size="lg" className="flex-1">
                 Submit Skill
               </Button>
-              <Button type="button" variant="outline" size="lg" onClick={() => router.back()}>
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                onClick={() => router.back()}
+              >
                 Cancel
               </Button>
             </div>

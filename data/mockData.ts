@@ -1,62 +1,13 @@
 // Mock data store for the skill exchange platform
 
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  location: string;
-  avatar?: string;
-  rating: number;
-  reviewCount: number;
-}
-
-export interface Skill {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  location: string;
-  skillLevel: 'Beginner' | 'Intermediate' | 'Expert';
-  userId: string;
-  userName: string;
-  userRating: number;
-  image?: string;
-  availability?: string;
-  createdAt: string;
-}
-
-export interface Booking {
-  id: string;
-  skillId: string;
-  skillTitle: string;
-  offeredSkillId: string;
-  offeredSkillTitle: string;
-  requesterId: string;
-  requesterName: string;
-  providerId: string;
-  providerName: string;
-  message: string;
-  status: 'pending' | 'accepted' | 'rejected' | 'completed';
-  createdAt: string;
-}
-
-export interface Review {
-  id: string;
-  skillId: string;
-  skillTitle: string;
-  reviewerId: string;
-  reviewerName: string;
-  rating: number;
-  comment: string;
-  createdAt: string;
-}
+import { Booking, Review, Skill, User } from "@/types";
 
 // Current logged-in user
 export const currentUser: User = {
-  id: 'user-1',
-  name: 'Alex Johnson',
-  email: 'alex@example.com',
-  location: 'San Francisco, CA',
+  id: "user-1",
+  name: "Hira Khan",
+  email: "uxdhira@gmail.com",
+  location: "San Francisco, CA",
   rating: 4.8,
   reviewCount: 24,
 };
@@ -65,194 +16,244 @@ export const currentUser: User = {
 export const users: User[] = [
   currentUser,
   {
-    id: 'user-2',
-    name: 'Sarah Miller',
-    email: 'sarah@example.com',
-    location: 'New York, NY',
+    id: "user-2",
+    name: "Sarah Miller",
+    email: "sarah@example.com",
+    location: "New York, NY",
     rating: 4.9,
     reviewCount: 31,
   },
   {
-    id: 'user-3',
-    name: 'Mike Chen',
-    email: 'mike@example.com',
-    location: 'Austin, TX',
+    id: "user-3",
+    name: "Mike Chen",
+    email: "mike@example.com",
+    location: "Austin, TX",
     rating: 4.7,
     reviewCount: 18,
   },
   {
-    id: 'user-4',
-    name: 'Emma Davis',
-    email: 'emma@example.com',
-    location: 'Seattle, WA',
+    id: "user-4",
+    name: "Emma Davis",
+    email: "emma@example.com",
+    location: "Seattle, WA",
     rating: 4.6,
     reviewCount: 15,
   },
 ];
 
 // Categories
-export const CATEGORIES = ["All", "Cognitive", "Technical", "Interpersonal", "Personal", "Organizational", "Digital", "Language"];
+export const CATEGORIES = [
+  "All",
+  "Cognitive",
+  "Technical",
+  "Interpersonal",
+  "Personal",
+  "Organizational",
+  "Digital",
+  "Language",
+];
 
 // Mock skills
 export const mockSkills: Skill[] = [
   {
-    id: 'skill-1',
-    title: 'Web Design Basics',
-    description: 'Learn the fundamentals of web design including HTML, CSS, and responsive design principles. Perfect for beginners who want to create beautiful websites.',
+    id: "skill-1",
+    title: "Web Design Basics",
+    description:
+      "Learn the fundamentals of web design including HTML, CSS, and responsive design principles. Perfect for beginners who want to create beautiful websites.",
     category: "Technical",
-    location: 'San Francisco, CA',
-    skillLevel: 'Intermediate',
-    userId: 'user-1',
-    userName: 'Alex Johnson',
+    location: "San Francisco, CA",
+    skillLevel: "Intermediate",
+    userId: "user-1",
+    userName: "Alex Johnson",
     userRating: 4.8,
-    availability: 'Weekday evenings',
-    createdAt: '2026-02-15',
+    availability: "Weekday evenings",
+    status: "accepted",
+    createdAt: "2026-02-15",
+    image:
+      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=600",
   },
   {
-    id: 'skill-2',
-    title: 'Spanish Conversation Practice',
-    description: 'Native Spanish speaker offering conversation practice for intermediate learners. Improve your fluency and confidence in speaking Spanish.',
+    id: "skill-2",
+    title: "Spanish Conversation Practice",
+    description:
+      "Native Spanish speaker offering conversation practice for intermediate learners. Improve your fluency and confidence in speaking Spanish.",
     category: "Language",
-    location: 'New York, NY',
-    skillLevel: 'Expert',
-    userId: 'user-2',
-    userName: 'Sarah Miller',
+    location: "New York, NY",
+    skillLevel: "Expert",
+    userId: "user-2",
+    userName: "Sarah Miller",
     userRating: 4.9,
-    availability: 'Flexible schedule',
-    createdAt: '2026-02-18',
+    status: "accepted",
+
+    availability: "Flexible schedule",
+    createdAt: "2026-02-18",
+    image:
+      "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=600",
   },
   {
-    id: 'skill-3',
-    title: 'Guitar Lessons for Beginners',
-    description: 'Learn to play guitar from scratch. Covers basic chords, strumming patterns, and your first songs. Acoustic or electric guitar welcome.',
+    id: "skill-3",
+    title: "Guitar Lessons for Beginners",
+    description:
+      "Learn to play guitar from scratch. Covers basic chords, strumming patterns, and your first songs. Acoustic or electric guitar welcome.",
     category: "Personal",
-    location: 'Austin, TX',
-    skillLevel: 'Intermediate',
-    userId: 'user-3',
-    userName: 'Mike Chen',
+    location: "Austin, TX",
+    skillLevel: "Intermediate",
+    userId: "user-3",
+    userName: "Mike Chen",
+    status: "accepted",
+
     userRating: 4.7,
-    availability: 'Weekends only',
-    createdAt: '2026-02-10',
+    availability: "Weekends only",
+    createdAt: "2026-02-10",
+    image:
+      "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?q=80&w=600",
   },
   {
-    id: 'skill-4',
-    title: 'Digital Photography Tips',
-    description: 'Master your digital camera and learn composition, lighting, and editing basics. Perfect for hobbyists wanting to improve their photography skills.',
+    id: "skill-4",
+    title: "Digital Photography Tips",
+    description:
+      "Master your digital camera and learn composition, lighting, and editing basics. Perfect for hobbyists wanting to improve their photography skills.",
     category: "Digital",
-    location: 'Seattle, WA',
-    skillLevel: 'Intermediate',
-    userId: 'user-4',
-    userName: 'Emma Davis',
+    location: "Seattle, WA",
+    skillLevel: "Intermediate",
+    status: "accepted",
+
+    userId: "user-4",
+    userName: "Emma Davis",
     userRating: 4.6,
-    availability: 'Weekend mornings',
-    createdAt: '2026-02-20',
+    availability: "Weekend mornings",
+    createdAt: "2026-02-20",
+    image:
+      "https://images.unsplash.com/photo-1492724441997-5dc865305da7?q=80&w=600",
   },
   {
-    id: 'skill-5',
-    title: 'Python Programming Introduction',
-    description: 'Get started with Python programming. Learn basic syntax, data structures, and create your first programs. No prior coding experience needed.',
-    category:  "Technical",
-    location: 'San Francisco, CA',
-    skillLevel: 'Beginner',
-    userId: 'user-1',
-    userName: 'Alex Johnson',
+    id: "skill-5",
+    title: "Python Programming Introduction",
+    description:
+      "Get started with Python programming. Learn basic syntax, data structures, and create your first programs. No prior coding experience needed.",
+    category: "Technical",
+    location: "San Francisco, CA",
+    skillLevel: "Beginner",
+    userId: "user-1",
+    userName: "Alex Johnson",
+    status: "accepted",
+
     userRating: 4.8,
-    availability: 'Weekday evenings',
-    createdAt: '2026-02-12',
+    availability: "Weekday evenings",
+    createdAt: "2026-02-12",
+    image:
+      "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=600",
   },
   {
-    id: 'skill-6',
-    title: 'Yoga for Beginners',
-    description: 'Introduction to yoga with focus on basic poses, breathing techniques, and flexibility. Suitable for all fitness levels.',
-    category:"Cognitive",
-    location: 'New York, NY',
-    skillLevel: 'Beginner',
-    userId: 'user-2',
-    userName: 'Sarah Miller',
+    id: "skill-6",
+    title: "Yoga for Beginners",
+    description:
+      "Introduction to yoga with focus on basic poses, breathing techniques, and flexibility. Suitable for all fitness levels.",
+    category: "Cognitive",
+    location: "New York, NY",
+    skillLevel: "Beginner",
+    userId: "user-2",
+    userName: "Sarah Miller",
+    status: "accepted",
+
     userRating: 4.9,
-    availability: 'Early mornings',
-    createdAt: '2026-02-14',
+    availability: "Early mornings",
+    createdAt: "2026-02-14",
+    image:
+      "https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=600",
   },
   {
-    id: 'skill-7',
-    title: 'Social Media Marketing',
-    description: 'Learn how to create effective social media strategies, engage audiences, and grow your online presence across different platforms.',
+    id: "skill-7",
+    title: "Social Media Marketing",
+    description:
+      "Learn how to create effective social media strategies, engage audiences, and grow your online presence across different platforms.",
     category: "Digital",
-    location: 'Austin, TX',
-    skillLevel: 'Intermediate',
-    userId: 'user-3',
-    userName: 'Mike Chen',
+    location: "Austin, TX",
+    skillLevel: "Intermediate",
+    userId: "user-3",
+    userName: "Mike Chen",
     userRating: 4.7,
-    availability: 'Afternoons',
-    createdAt: '2026-02-16',
+    status: "accepted",
+
+    availability: "Afternoons",
+    createdAt: "2026-02-16",
+    image:
+      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=600",
   },
   {
-    id: 'skill-8',
-    title: 'Home Organization & Decluttering',
-    description: 'Expert tips on organizing your home, decluttering effectively, and maintaining a tidy living space. Transform your home one room at a time.',
-    category:"Organizational",
-    location: 'Seattle, WA',
-    skillLevel: 'Expert',
-    userId: 'user-4',
-    userName: 'Emma Davis',
+    id: "skill-8",
+    title: "Home Organization & Decluttering",
+    description:
+      "Expert tips on organizing your home, decluttering effectively, and maintaining a tidy living space. Transform your home one room at a time.",
+    category: "Organizational",
+    location: "Seattle, WA",
+    skillLevel: "Expert",
+    userId: "user-4",
+    userName: "Emma Davis",
     userRating: 4.6,
-    availability: 'Weekends',
-    createdAt: '2026-02-19',
+    status: "accepted",
+
+    availability: "Weekends",
+    createdAt: "2026-02-19",
+    image:
+      "https://images.unsplash.com/photo-1484101403633-562f891dc89a?q=80&w=600",
   },
 ];
-
 // Mock bookings
 export const mockBookings: Booking[] = [
   {
-    id: 'booking-1',
-    skillId: 'skill-2',
-    skillTitle: 'Spanish Conversation Practice',
-    offeredSkillId: 'skill-1',
-    offeredSkillTitle: 'Web Design Basics',
-    requesterId: 'user-1',
-    requesterName: 'Alex Johnson',
-    providerId: 'user-2',
-    providerName: 'Sarah Miller',
-    message: 'Hi! I would love to practice Spanish with you. I can offer web design help in return.',
-    status: 'accepted',
-    createdAt: '2026-02-21',
+    id: "booking-1",
+    skillId: "skill-2",
+    skillTitle: "Spanish Conversation Practice",
+    offeredSkillId: "skill-1",
+    offeredSkillTitle: "Web Design Basics",
+    requesterId: "user-1",
+    requesterName: "Alex Johnson",
+    providerId: "user-2",
+    providerName: "Sarah Miller",
+    message:
+      "Hi! I would love to practice Spanish with you. I can offer web design help in return.",
+    status: "accepted",
+    createdAt: "2026-02-21",
   },
   {
-    id: 'booking-2',
-    skillId: 'skill-3',
-    skillTitle: 'Guitar Lessons for Beginners',
-    offeredSkillId: 'skill-5',
-    offeredSkillTitle: 'Python Programming Introduction',
-    requesterId: 'user-1',
-    requesterName: 'Alex Johnson',
-    providerId: 'user-3',
-    providerName: 'Mike Chen',
-    message: 'Interested in learning guitar! Can teach you Python in exchange.',
-    status: 'pending',
-    createdAt: '2026-02-22',
+    id: "booking-2",
+    skillId: "skill-3",
+    skillTitle: "Guitar Lessons for Beginners",
+    offeredSkillId: "skill-5",
+    offeredSkillTitle: "Python Programming Introduction",
+    requesterId: "user-1",
+    requesterName: "Alex Johnson",
+    providerId: "user-3",
+    providerName: "Mike Chen",
+    message: "Interested in learning guitar! Can teach you Python in exchange.",
+    status: "pending",
+    createdAt: "2026-02-22",
   },
 ];
 
 // Mock reviews
 export const mockReviews: Review[] = [
   {
-    id: 'review-1',
-    skillId: 'skill-1',
-    skillTitle: 'Web Design Basics',
-    reviewerId: 'user-2',
-    reviewerName: 'Sarah Miller',
+    id: "review-1",
+    skillId: "skill-1",
+    skillTitle: "Web Design Basics",
+    reviewerId: "user-2",
+    reviewerName: "Sarah Miller",
     rating: 5,
-    comment: 'Excellent teacher! Very patient and knowledgeable. Learned so much about web design.',
-    createdAt: '2026-02-20',
+    comment:
+      "Excellent teacher! Very patient and knowledgeable. Learned so much about web design.",
+    createdAt: "2026-02-20",
   },
   {
-    id: 'review-2',
-    skillId: 'skill-1',
-    skillTitle: 'Web Design Basics',
-    reviewerId: 'user-3',
-    reviewerName: 'Mike Chen',
+    id: "review-2",
+    skillId: "skill-1",
+    skillTitle: "Web Design Basics",
+    reviewerId: "user-3",
+    reviewerName: "Mike Chen",
     rating: 5,
-    comment: 'Great experience! Alex explained everything clearly and provided helpful resources.',
-    createdAt: '2026-02-18',
+    comment:
+      "Great experience! Alex explained everything clearly and provided helpful resources.",
+    createdAt: "2026-02-18",
   },
 ];

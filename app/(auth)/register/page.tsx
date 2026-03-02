@@ -1,7 +1,10 @@
-import RegisterForm from "@/components/shadcn-space/blocks/register-01/register";
-
+import RegisterForm from "@/components/blocks/register/register";
+import { Metadata } from "next";
+export const metadata: Metadata = {
+  title: "Register",
+};
 const Page = () => {
-  return <RegisterForm/>;
+  return <RegisterForm />;
 };
 
 export default Page;

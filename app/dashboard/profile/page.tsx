@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card1';
-import { Button } from '@/components/ui/button1';
-import { Input } from '@/components/ui/input1';
-import { Label } from '@/components/ui/label1';
-import { Textarea } from '@/components/ui/textarea';
-import { currentUser } from '@/data/mockData';
-import { User, MapPin, Mail, Star, Edit2, Save } from 'lucide-react';
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { currentUser } from "@/data/mockData";
+import { User, MapPin, Mail, Star, Edit2, Save } from "lucide-react";
 
 export default function MyProfile() {
   const [isEditing, setIsEditing] = useState(false);
@@ -15,14 +15,14 @@ export default function MyProfile() {
     name: currentUser.name,
     email: currentUser.email,
     location: currentUser.location,
-    bio: 'Passionate about learning and sharing knowledge. Always excited to connect with new people and exchange skills!',
+    bio: "Passionate about learning and sharing knowledge. Always excited to connect with new people and exchange skills!",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsEditing(false);
     // In real app, this would update the database
-    alert('Profile updated successfully! (This is a demo)');
+    alert("Profile updated successfully! (This is a demo)");
   };
 
   const handleChange = (field: string, value: string) => {
@@ -46,7 +46,10 @@ export default function MyProfile() {
           <div className="flex items-center gap-6">
             <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
               <span className="text-3xl font-bold text-blue-600">
-                {currentUser.name.split(' ').map(n => n[0]).join('')}
+                {currentUser.name
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")}
               </span>
             </div>
             <div className="flex-1">
@@ -54,7 +57,9 @@ export default function MyProfile() {
               <div className="flex items-center gap-1 text-lg">
                 <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                 <span className="font-medium">{currentUser.rating}</span>
-                <span className="text-gray-500">({currentUser.reviewCount} reviews)</span>
+                <span className="text-gray-500">
+                  ({currentUser.reviewCount} reviews)
+                </span>
               </div>
             </div>
           </div>
@@ -67,7 +72,7 @@ export default function MyProfile() {
                 <Input
                   id="name"
                   value={formData.name}
-                  onChange={(e) => handleChange('name', e.target.value)}
+                  onChange={(e) => handleChange("name", e.target.value)}
                   required
                 />
               </div>
@@ -78,7 +83,7 @@ export default function MyProfile() {
                   id="email"
                   type="email"
                   value={formData.email}
-                  onChange={(e) => handleChange('email', e.target.value)}
+                  onChange={(e) => handleChange("email", e.target.value)}
                   required
                 />
               </div>
@@ -88,7 +93,7 @@ export default function MyProfile() {
                 <Input
                   id="location"
                   value={formData.location}
-                  onChange={(e) => handleChange('location', e.target.value)}
+                  onChange={(e) => handleChange("location", e.target.value)}
                   required
                 />
               </div>
@@ -98,7 +103,7 @@ export default function MyProfile() {
                 <Textarea
                   id="bio"
                   value={formData.bio}
-                  onChange={(e) => handleChange('bio', e.target.value)}
+                  onChange={(e) => handleChange("bio", e.target.value)}
                   rows={4}
                 />
               </div>
@@ -108,7 +113,11 @@ export default function MyProfile() {
                   <Save className="w-4 h-4 mr-2" />
                   Save Changes
                 </Button>
-                <Button type="button" variant="outline" onClick={() => setIsEditing(false)}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsEditing(false)}
+                >
                   Cancel
                 </Button>
               </div>
@@ -164,7 +173,9 @@ export default function MyProfile() {
               <p className="text-sm text-gray-600 mt-1">Exchanges Completed</p>
             </div>
             <div className="text-center p-4 bg-purple-50 rounded-lg">
-              <p className="text-3xl font-bold text-purple-600">{currentUser.reviewCount}</p>
+              <p className="text-3xl font-bold text-purple-600">
+                {currentUser.reviewCount}
+              </p>
               <p className="text-sm text-gray-600 mt-1">Total Reviews</p>
             </div>
           </div>

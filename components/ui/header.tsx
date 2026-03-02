@@ -1,8 +1,18 @@
 "use client";
-
 import { useState, useEffect, useCallback } from "react";
-import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetClose } from "@/components/ui/sheet";
-import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList } from "@/components/ui/navigation-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetTitle,
+  SheetClose,
+} from "@/components/ui/sheet";
+import {
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+} from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
 import { Icon } from "@iconify/react";
 import Logo from "@/assets/logo/logo";
@@ -10,7 +20,8 @@ import { Button } from "@/components/ui/button";
 import { motion } from "motion/react";
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
-import { Zap }from 'lucide-react';
+import { Zap } from "lucide-react";
+import { useGlobalState } from "@/hooks/useGlobalState";
 
 export type NavigationSection = {
   title: string;
@@ -23,22 +34,33 @@ type HeaderProps = {
   className?: string;
 };
 
-const CollaborateButton = ({ className ,btnText}: { className?: string , btnText :string }) => (
-  <Button className={cn("relative text-sm font-medium rounded-full h-10 p-1 ps-4 pe-12 group transition-all duration-500 hover:ps-12 hover:pe-4 w-fit overflow-hidden", className)}>
-    <span className="relative z-10 transition-all duration-500">
-      {btnText}
-    </span>
-    <span className="absolute right-1 w-8 h-8 bg-background text-foreground rounded-full flex items-center justify-center transition-all duration-500 group-hover:right-[calc(100%-36px)] group-hover:rotate-45">
-      <ArrowUpRight size={16} />
-    </span>
-  </Button>
-);
+const AuthButtons = () => {
+  const { user } = useGlobalState();
+  console.log({ user });
+  return (
+    <>
+      {!user ? (
+        <>
+          <Link href={"/login"}>
+            <Button variant={"default"}>{"Login"}</Button>{" "}
+          </Link>
+          <Link href={"/register"}>
+            <Button variant={"outline"}>{"Register"}</Button>
+          </Link>
+        </>
+      ) : (
+        <Link href={"/dashboard"}>
+          <Button variant={"outline"}>{"Dashboard"}</Button>
+        </Link>
+      )}
+    </>
+  );
+};
 
 const Header = ({ navigationData, className }: HeaderProps) => {
   const [sticky, setSticky] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-
-  const [mounted, setMounted] = useState(false);
+  // const [mounted, setMounted] = useState(false);
 
   const handleScroll = useCallback(() => {
     setSticky(window.scrollY >= 50);
@@ -48,9 +70,9 @@ const Header = ({ navigationData, className }: HeaderProps) => {
     if (window.innerWidth >= 768) setIsOpen(false);
   }, []);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  // useEffect(() => {
+  //   setMounted(true);
+  // }, []);
 
   useEffect(() => {
     window.addEventListener("scroll", handleScroll);
@@ -82,26 +104,29 @@ const Header = ({ navigationData, className }: HeaderProps) => {
         )}
       >
         {/* Logo */}
-        
-<div>
-  <a href="#" className="flex items-center gap-3">
-    {/* Purple Icon */}
-    <Zap size={38}   className="text-purple-700" />
-    
-    {/* Deep Blue Text */}
-    <span className="text-3xl font-bold text-blue-950">SkillSpill</span>
-  </a>
-</div>
+
+        <div>
+          <Link href="/" className="flex items-center gap-3">
+            {/* Purple Icon */}
+            <Zap size={38} className="text-purple-700" />
+
+            {/* Deep Blue Text */}
+            <span className="text-2xl font-bold text-blue-950">SkillSpill</span>
+          </Link>
+        </div>
 
         {/* Desktop Navigation */}
         <div>
-          <NavigationMenu className="max-lg:hidden bg-muted p-0.5 rounded-full">
+          <NavigationMenu className="max-lg:hidden bg-muted p-0.5 rounded-full justify-between">
             <NavigationMenuList className="flex gap-0">
               {navigationData.map((navItem) => (
                 <NavigationMenuItem key={navItem.title}>
                   <NavigationMenuLink
                     href={navItem.href}
-                    className={cn("px-2 lg:px-4 py-2 text-sm font-medium rounded-full text-muted-foreground hover:text-foreground hover:bg-background outline outline-transparent hover:outline-border hover:shadow-xs transition tracking-normal", navItem.isActive ? "bg-background text-foreground" : "")}
+                    className={cn(
+                      "px-2 lg:px-4 py-2 text-sm font-medium rounded-full text-muted-foreground hover:text-foreground hover:bg-background outline outline-transparent hover:outline-border hover:shadow-xs transition tracking-normal",
+                      navItem.isActive ? "bg-background text-foreground" : "",
+                    )}
                   >
                     {navItem.title}
                   </NavigationMenuLink>
@@ -113,14 +138,11 @@ const Header = ({ navigationData, className }: HeaderProps) => {
 
         {/* Desktop CTA */}
         <div className="flex gap-4">
-          <Link href={'/login'}>
-          <CollaborateButton className="hidden lg:flex" btnText={'Login'} />
-          </Link>
-    <Link href={'/register'}>
-          <CollaborateButton className="hidden lg:flex" btnText={'Register Now'}/>
-          </Link>
+          <div className="hidden lg:block  space-x-2 ">
+            <AuthButtons />
+          </div>
           <div className="lg:hidden">
-            {mounted ? (
+            {true ? (
               <Sheet open={isOpen} onOpenChange={setIsOpen}>
                 <SheetTrigger id="mobile-menu-trigger">
                   <span className="rounded-full border border-border p-2 block">
@@ -139,9 +161,17 @@ const Header = ({ navigationData, className }: HeaderProps) => {
                   className="w-full sm:w-96 p-0 border-l-0"
                 >
                   <div className="flex items-center justify-between p-6">
-                    <a href="#">
-                      <Logo className="gap-2" />
-                    </a>
+                    <div>
+                      <Link href="/" className="flex items-center gap-3">
+                        {/* Purple Icon */}
+                        <Zap size={38} className="text-purple-700" />
+
+                        {/* Deep Blue Text */}
+                        <span className="text-2xl font-bold text-blue-950">
+                          SkillSpill
+                        </span>
+                      </Link>
+                    </div>
                     <SheetClose id="mobile-menu-close">
                       <span className="rounded-full border border-border p-2.5 block">
                         <Icon icon="lucide:x" width={16} height={16} />
@@ -183,13 +213,13 @@ const Header = ({ navigationData, className }: HeaderProps) => {
                         </NavigationMenuList>
                       </NavigationMenu>
 
-                      <div className="w-fit">
-                       <Link href={'/login'}>
-          <CollaborateButton  btnText= {"Login"}  />
-          </Link>
-    <Link href={'/register'}>
-          <CollaborateButton  btnText={'Sign in'}   />
-          </Link>
+                      <div className="w-fit space-x-2">
+                        <Link href={"/login"}>
+                          <Button variant={"default"}>{"Login"}</Button>
+                        </Link>
+                        <Link href={"/register"}>
+                          <Button variant={"default"}>{"Register"}</Button>
+                        </Link>
                       </div>
                     </div>
 

@@ -1,36 +1,89 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SkillSpill
 
-## Getting Started
+**SkillSpill – Unlock your potential, from coding to creativity.**  
+Join a community where curiosity meets expertise. Explore skills you’ve always wanted to master. Share what you know and discover what you can achieve next. Completely free – no money involved; just share your skills and learn from others.
 
-First, run the development server:
+---
+
+![Overview Image](./public/overview.png)
+
+## Overview
+
+**SkillSpill** is a free skill exchange platform where users can:
+
+1. **Share their skills** with the community
+2. **Learn new skills** from others
+3. **Book sessions** and review experiences
+
+The platform is designed for **simplicity and engagement**, allowing users to focus purely on learning and teaching skills, without any monetary transactions.
+
+---
+
+## How to Run Locally
+
+This project is built with **Next.js 16**, **TypeScript**, and **Shadcn**. Follow these steps to set up and run it locally:
+
+### 1. Install Node.js & npm
+
+Download and install Node.js (which includes npm) from [nodejs.org](https://nodejs.org).
+
+### 2. Clone the Repository
 
 ```bash
+git clone <your-repo-url>
+cd PROJECT_FOLDER
+3. Install Dependencies
+npm install
+4. Run Development Server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+Open http://localhost:3000
+ to view the app locally.
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Project Structure ::
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Authentication Pages:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Page            | Path                                  |
+| --------------- | ------------------------------------- |
+| Forgot Password | `app/(auth)/forgot-password/page.tsx` |
+| Login           | `app/(auth)/login/page.tsx`           |
+| Register        | `app/(auth)/register/page.tsx`        |
 
-## Learn More
+### Dashboard Pages:
 
-To learn more about Next.js, take a look at the following resources:
+| Section          | Path                                                                               |
+| ---------------- | ---------------------------------------------------------------------------------- |
+| Dashboard Layout | `app/dashboard/layout.tsx`                                                         |
+| Dashboard Home   | `app/dashboard/page.tsx`                                                           |
+| Bookings         | `app/dashboard/bookings/page.tsx` <br> `app/dashboard/bookings/layout.tsx`         |
+| Browse Skills    | `app/dashboard/browse-skill/page.tsx` <br> `app/dashboard/browse-skill/layout.tsx` |
+| Profile          | `app/dashboard/profile/layout.tsx` <br> `app/dashboard/profile/page.tsx`           |
+| Reviews          | `app/dashboard/reviews/page.tsx` <br> `app/dashboard/reviews/layout.tsx`           |
+| Skill Details    | `app/dashboard/skill-details/[id]/page.tsx`                                        |
+| Skills           | `app/dashboard/skills/layout.tsx` <br> `app/dashboard/skills/page.tsx`             |
+| Submit Skill     | `app/dashboard/submit-skill/layout.tsx` <br> `app/dashboard/submit-skill/page.tsx` |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Landing Pages:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Page           | Path                                                 |
+| -------------- | ---------------------------------------------------- |
+| Home / Landing | `app/landing/layout.tsx` <br> `app/landing/page.tsx` |
+| Landing Skill  | `app/landing/skill/[id]/page.tsx`                    |
 
-## Deploy on Vercel
+## Future Roadmap:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1:Refactor code to avoid repetition and improve maintainability
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+2:Integrate Strapi backend for dynamic data management
+
+3:Add more features as defined in the final prototype
+
+4:Enhance UI/UX and add advanced dashboard analytics
+
+### Conclusion:
+
+This project is a completely free skill exchange platform that allows users to share their skills and learn new ones without any monetary transactions. Built using Next.js and TypeScript, it features a clean and modern design. The project is still in development, but it has a solid foundation that can be expanded with more features in the future.
+
+Author: Hira Khan
