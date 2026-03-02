@@ -2,7 +2,7 @@
 
 import { mockSkills } from '@/data/mockData';
 import { Skill, User } from '@/types';
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 type MockDataContextType = {
   user: User | null;
@@ -19,17 +19,21 @@ const MockDataContext = createContext<MockDataContextType | undefined>(undefined
 export const MockStateProvider = ({ children }: { children: ReactNode }) => {
   //   const [currUser,
   // ] = useState<User | null>(currentUser);
-  // const [user, setUser] = useState<User | null>(null);
-  const [user, setUser] = useState<User | null>(() => {
-    if (typeof window === 'undefined') return null;
+  const [user, setUser] = useState<User | null>(null);
+  // const [user, setUser] = useState<User | null>(() => {
+  //   if (typeof window === 'undefined') return null;
 
-    try {
-      const storedUser = localStorage.getItem('currentUser');
-      return storedUser ? JSON.parse(storedUser) : null;
-    } catch {
-      return null;
-    }
-  });
+  //   try {
+  //     const storedUser = localStorage.getItem('currentUser');
+  //     return storedUser ? JSON.parse(storedUser) : null;
+  //   } catch {
+  //     return null;
+  //   }
+  // });
+  useEffect(() => {
+    const stored = localStorage.getItem('currentUser');
+    if (stored) setUser(JSON.parse(stored));
+  }, []);
   // Load user from localStorage on client-side only
   // useEffect(() => {
   //   try {
