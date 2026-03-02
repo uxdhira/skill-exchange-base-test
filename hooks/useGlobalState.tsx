@@ -1,14 +1,8 @@
-"use client";
+'use client';
 
-import { currentUser, mockSkills } from "@/data/mockData";
-import { Skill, User } from "@/types";
-import {
-  createContext,
-  useContext,
-  useState,
-  ReactNode,
-  useEffect,
-} from "react";
+import { mockSkills } from '@/data/mockData';
+import { Skill, User } from '@/types';
+import { createContext, useContext, useState, ReactNode } from 'react';
 
 type MockDataContextType = {
   user: User | null;
@@ -20,35 +14,42 @@ type MockDataContextType = {
   logoutUser: () => void;
 };
 
-const MockDataContext = createContext<MockDataContextType | undefined>(
-  undefined,
-);
+const MockDataContext = createContext<MockDataContextType | undefined>(undefined);
 
 export const MockStateProvider = ({ children }: { children: ReactNode }) => {
   //   const [currUser,
   // ] = useState<User | null>(currentUser);
-  const [user, setUser] = useState<User | null>(null);
+  // const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    if (typeof window === 'undefined') return null;
 
-  // Load user from localStorage on client-side only
-  useEffect(() => {
     try {
-      const storedUser = localStorage.getItem("currentUser");
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
-      }
+      const storedUser = localStorage.getItem('currentUser');
+      return storedUser ? JSON.parse(storedUser) : null;
     } catch {
-      setUser(null);
+      return null;
     }
-  }, []);
+  });
+  // Load user from localStorage on client-side only
+  // useEffect(() => {
+  //   try {
+  //     const storedUser = localStorage.getItem('currentUser');
+  //     if (storedUser) {
+  //       setUser(JSON.parse(storedUser));
+  //     }
+  //   } catch {
+  //     setUser(null);
+  //   }
+  // }, []);
 
   const loginUser = (currentUser: User) => {
     setUser(currentUser);
-    localStorage.setItem("currentUser", JSON.stringify(currentUser));
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
   };
 
   const logoutUser = () => {
     setUser(null);
-    localStorage.removeItem("currentUser");
+    localStorage.removeItem('currentUser');
   };
 
   const [skills, setSkills] = useState<Skill[]>(mockSkills);
@@ -85,7 +86,7 @@ export const useGlobalState = () => {
   const context = useContext(MockDataContext);
 
   if (!context) {
-    throw new Error("useGlobalState must be used within MockDataProvider");
+    throw new Error('useGlobalState must be used within MockDataProvider');
   }
 
   return context;
