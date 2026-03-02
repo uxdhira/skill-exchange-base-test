@@ -37,19 +37,25 @@ export default function UserSidebar() {
             <AvatarFallback>AJ</AvatarFallback>
           </Avatar>
 
-          <div>
-            <h2 className="font-semibold text-base">{user?.name}</h2>
-            <div className="flex items-center justify-center text-sm text-muted-foreground gap-1">
-              <MapPin className="w-3 h-3" />
-              {user?.location}
-            </div>
-          </div>
+          {user && (
+            <>
+              <div>
+                <h2 className="font-semibold text-base">{user?.name}</h2>
+                <div className="flex items-center justify-center text-sm text-muted-foreground gap-1">
+                  <MapPin className="w-3 h-3" />
+                  {user?.location}
+                </div>
+              </div>
 
-          <div className="flex items-center gap-1 text-sm">
-            <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-            <span className="font-medium">{user?.rating}</span>
-            <span className="text-muted-foreground">/ {user?.reviewCount}</span>
-          </div>
+              <div className="flex items-center gap-1 text-sm">
+                <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                <span className="font-medium">{user?.rating}</span>
+                <span className="text-muted-foreground">
+                  / {user?.reviewCount}
+                </span>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Navigation */}

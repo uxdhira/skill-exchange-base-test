@@ -22,6 +22,7 @@ import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { Zap } from "lucide-react";
 import { useGlobalState } from "@/hooks/useGlobalState";
+import AuthButtons from "./auth-buttons";
 
 export type NavigationSection = {
   title: string;
@@ -32,29 +33,6 @@ export type NavigationSection = {
 type HeaderProps = {
   navigationData: NavigationSection[];
   className?: string;
-};
-
-const AuthButtons = () => {
-  const { user } = useGlobalState();
-  console.log({ user });
-  return (
-    <>
-      {!user ? (
-        <>
-          <Link href={"/login"}>
-            <Button variant={"default"}>{"Login"}</Button>{" "}
-          </Link>
-          <Link href={"/register"}>
-            <Button variant={"outline"}>{"Register"}</Button>
-          </Link>
-        </>
-      ) : (
-        <Link href={"/dashboard"}>
-          <Button variant={"outline"}>{"Dashboard"}</Button>
-        </Link>
-      )}
-    </>
-  );
 };
 
 const Header = ({ navigationData, className }: HeaderProps) => {

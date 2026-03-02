@@ -1,6 +1,6 @@
 import HeroSection from "@/components/blocks/hero/hero";
-import type { NavigationSection } from "@/components/ui/header";
-import Header from "@/components/ui/header";
+import type { NavigationSection } from "@/components/ui/nav/header";
+import Header from "@/components/ui/nav/header";
 import BrandSlider from "@/components/blocks/hero/brand-slider";
 import type { AvatarList } from "@/components/blocks/hero/hero";
 import {

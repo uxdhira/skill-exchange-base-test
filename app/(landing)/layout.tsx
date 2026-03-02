@@ -1,5 +1,5 @@
 import Footer from "@/components/blocks/footer/footer";
-import Header, { NavigationSection } from "@/components/ui/header";
+import Header, { NavigationSection } from "@/components/ui/nav/header";
 import { MockStateProvider } from "@/hooks/useGlobalState";
 const navigationData: NavigationSection[] = [
   {
