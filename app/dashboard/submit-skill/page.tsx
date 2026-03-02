@@ -66,10 +66,11 @@ export default function SubmitSkillPage() {
       userRating: 4.8,
     };
     addSkill(newSkill);
-    toast(
-      "Your skill has been created and accepted from our Team. Happy Learning!",
-      { position: "top-center" },
-    );
+
+    const toastMessage = isEdit
+      ? "Your skill has been updated successfully!"
+      : "Your skill has been created and accepted from our Team. Happy Learning!";
+    toast(toastMessage, { position: "top-center" });
 
     router.push("/dashboard/skills");
   };

@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useGlobalState } from '@/hooks/useGlobalState';
-import Link from 'next/link';
-import { Button } from '../../button';
+import { useEffect, useState } from "react";
+import { useGlobalState } from "@/hooks/useGlobalState";
+import Link from "next/link";
+import { Button } from "../../button";
 
 const AuthButtons = () => {
   const { user } = useGlobalState();
@@ -19,16 +19,16 @@ const AuthButtons = () => {
     <>
       {!user ? (
         <>
-          <Link href='/login'>
-            <Button variant='default'>Login</Button>
+          <Link href="/login">
+            <Button variant="default">Login</Button>
           </Link>
-          <Link href='/register'>
-            <Button variant='outline'>Register</Button>
+          <Link href="/register">
+            <Button variant="outline">Register</Button>
           </Link>
         </>
       ) : (
-        <Link href='/dashboard'>
-          <Button variant='outline'>Dashboard</Button>
+        <Link href="/dashboard">
+          <Button variant="outline">Dashboard</Button>
         </Link>
       )}
     </>
