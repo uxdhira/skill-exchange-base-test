@@ -52,7 +52,7 @@ export default function SubmitSkillPage() {
     e.preventDefault();
     // alert("Skill submitted successfully! (This is a demo)");
     const newSkill: Skill = {
-      id: isEdit ? skillId : crypto.randomUUID(), // better than Math.random
+      id: isEdit && skillId ? skillId : crypto.randomUUID(),
       title: formData.title,
       description: formData.description,
       category: formData.category,
