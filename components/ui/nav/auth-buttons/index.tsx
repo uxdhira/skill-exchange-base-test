@@ -1,19 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useGlobalState } from "@/hooks/useGlobalState";
 import Link from "next/link";
 import { Button } from "../../button";
 
 const AuthButtons = () => {
   const { user } = useGlobalState();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) return null; // prevent SSR mismatch
 
   return (
     <>

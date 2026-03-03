@@ -1,13 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { CATEGORIES, mockSkills } from "@/data/mockData";
-import Image from "next/image";
 import SkillCard from "@/components/ui/skill-card";
+import { CATEGORIES, mockSkills } from "@/data/mockData";
+import { useState } from "react";
 
 export default function SkillCategories() {
   const [activeTab, setActiveTab] = useState("All");

@@ -1,27 +1,23 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-  SheetTitle,
-  SheetClose,
-} from "@/components/ui/sheet";
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
 } from "@/components/ui/navigation-menu";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { Icon } from "@iconify/react";
-import Logo from "@/assets/logo/logo";
-import { Button } from "@/components/ui/button";
-import { motion } from "motion/react";
-import { ArrowUpRight } from "lucide-react";
-import Link from "next/link";
 import { Zap } from "lucide-react";
-import { useGlobalState } from "@/hooks/useGlobalState";
+import { motion } from "motion/react";
+import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
 import AuthButtons from "./auth-buttons";
 
 export type NavigationSection = {
@@ -47,10 +43,6 @@ const Header = ({ navigationData, className }: HeaderProps) => {
   const handleResize = useCallback(() => {
     if (window.innerWidth >= 768) setIsOpen(false);
   }, []);
-
-  // useEffect(() => {
-  //   setMounted(true);
-  // }, []);
 
   useEffect(() => {
     window.addEventListener("scroll", handleScroll);
@@ -192,12 +184,7 @@ const Header = ({ navigationData, className }: HeaderProps) => {
                       </NavigationMenu>
 
                       <div className="w-fit space-x-2">
-                        <Link href={"/login"}>
-                          <Button variant={"default"}>{"Login"}</Button>
-                        </Link>
-                        <Link href={"/register"}>
-                          <Button variant={"default"}>{"Register"}</Button>
-                        </Link>
+                        <AuthButtons />
                       </div>
                     </div>
 

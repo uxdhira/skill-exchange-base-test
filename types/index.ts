@@ -14,7 +14,7 @@ export interface User {
 }
 
 export interface Skill {
-  id: string;
+  id: string | null;
   title: string;
   description: string;
   category: string;

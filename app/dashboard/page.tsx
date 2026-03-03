@@ -1,9 +1,9 @@
 "use client";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { currentUser, mockSkills, mockBookings } from "@/data/mockData";
+import { currentUser, mockBookings, mockSkills } from "@/data/mockData";
 import { Award, Calendar, Star, TrendingUp } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 
 export default function DashboardHomePage() {
   const mySkills = mockSkills.filter(
@@ -170,11 +170,11 @@ export default function DashboardHomePage() {
                   <h4 className="font-medium">{skill.title}</h4>
                   <p className="text-sm text-gray-600">{skill.category}</p>
                 </div>
-                <Link href={`/dashboard/skills/${skill.id}`}>
-                  <Button variant="ghost" size="sm">
+                <Button asChild variant="ghost" size="sm">
+                  <Link href={`/dashboard/skill-details/${skill.id}`}>
                     View
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               </div>
             ))}
             {mySkills.length === 0 && (

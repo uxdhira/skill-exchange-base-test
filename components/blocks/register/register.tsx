@@ -1,25 +1,25 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
-import { Zap } from "lucide-react";
-import { useCurrentUser } from "@/hooks/useUser";
-import { useEffect } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { currentUser } from "@/data/mockData";
 import { useGlobalState } from "@/hooks/useGlobalState";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { toast } from "sonner";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { user, setUser } = useGlobalState();
+  const { user, loginUser } = useGlobalState();
 
   useEffect(() => {
     if (user) {
@@ -29,8 +29,13 @@ export default function RegisterPage() {
   }, [user, router]);
   const handleSignUp = (e: React.FormEvent) => {
     e.preventDefault();
+    const userData = currentUser;
+    loginUser(userData);
 
-    // Redirecting to the browse-skill page inside dashboard as requested
+    const toastMessage = "Your account has been created successfully!";
+
+    toast(toastMessage, { position: "top-center" });
+    // Redirecting to the   dashboard
     router.push("/dashboard");
   };
 
@@ -53,6 +58,7 @@ export default function RegisterPage() {
               <Label htmlFor="fullname">Full Name</Label>
               <Input
                 id="fullname"
+                defaultValue={"Hira Khan"}
                 placeholder="John Doe"
                 className="bg-slate-50/50 border-slate-200"
                 required
@@ -65,6 +71,7 @@ export default function RegisterPage() {
               <Input
                 id="email"
                 type="email"
+                defaultValue={"uxdhira@gmail.com"}
                 placeholder="your.email@example.com"
                 className="bg-slate-50/50 border-slate-200"
                 required
@@ -77,6 +84,7 @@ export default function RegisterPage() {
               <Input
                 id="password"
                 type="password"
+                defaultValue={"uxdk1234"}
                 placeholder="........"
                 className="bg-slate-50/50 border-slate-200"
                 required
@@ -89,6 +97,7 @@ export default function RegisterPage() {
               <Input
                 id="confirm-password"
                 type="password"
+                defaultValue={"uxdk1234"}
                 placeholder="........"
                 className="bg-slate-50/50 border-slate-200"
                 required

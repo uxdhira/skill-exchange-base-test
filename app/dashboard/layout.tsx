@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import UserSidebar from "@/components/ui/sidebar";
-import Navbar from "@/components/ui/navbar-dash"; // The component we built
+
 import { MockStateProvider } from "@/hooks/useGlobalState";
+import UserSidebar from "@/components/ui/nav/sidebar";
+import Navbar from "@/components/ui/nav/navbar-dash";
 
 export const metadata: Metadata = {
   title: {
@@ -23,7 +24,7 @@ export default function DashboardLayout({
         <UserSidebar />
 
         {/* Content Area */}
-        <main className="ml-64 flex-1 bg-gray-50 min-h-screen flex flex-col">
+        <main className="ml-0 md:ml-64 w-full flex-1 bg-gray-50 min-h-screen flex flex-col">
           {/* Sticky Navbar inside the content area */}
           <Navbar />
 

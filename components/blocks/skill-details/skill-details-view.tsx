@@ -1,23 +1,13 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowLeft, MapPin, Star, Calendar, Info } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Skill } from "@/types";
+import { ArrowLeft, Calendar, Info, MapPin, Star } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "../../ui/button";
-
-interface Skill {
-  id: string;
-  category: string;
-  skillLevel: string;
-  title: string;
-  location: string;
-  userRating: number;
-  description: string;
-  userName: string;
-}
 
 interface SkillDetailsProps {
   skill: Skill;
@@ -32,7 +22,6 @@ export default function SkillDetailsView({
 }: SkillDetailsProps) {
   const router = useRouter();
   if (!skill) return <p className="p-6">Skill not found</p>;
-
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6">
       <Button
@@ -44,7 +33,20 @@ export default function SkillDetailsView({
         Back
       </Button>
 
-      <Card>
+      <Card className="p-0 overflow-hidden rounded-2xl">
+        <div className="  h-60 bg-slate-200 flex items-center justify-center text-slate-400 font-bold uppercase tracking-widest group-hover:bg-slate-300 transition-colors">
+          {skill.image ? (
+            <Image
+              src={skill.image}
+              alt="Serenity Residential Home"
+              width={440}
+              height={400}
+              className="w-full h-full object-cover rounded-t-2xl group-hover:brightness-50 group-hover:scale-125 transition duration-300 delay-75"
+            />
+          ) : (
+            skill.category
+          )}
+        </div>
         <CardContent className="p-8 space-y-6">
           <div className="flex gap-2">
             <Badge variant="secondary">{skill.category}</Badge>

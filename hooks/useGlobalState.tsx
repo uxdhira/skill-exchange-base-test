@@ -4,10 +4,10 @@ import { mockSkills } from "@/data/mockData";
 import { Skill, User } from "@/types";
 import {
   createContext,
-  useContext,
-  useState,
   ReactNode,
+  useContext,
   useEffect,
+  useState,
 } from "react";
 
 type MockDataContextType = {
@@ -15,6 +15,8 @@ type MockDataContextType = {
   setUser: (user: User | null) => void;
   mockSkillData: Skill[];
   addSkill: (skill: Skill) => void;
+  editSkill: (skill: Skill) => void;
+
   deleteSkill: (id: string) => void;
   loginUser: (currentUser: User) => void;
   logoutUser: () => void;
@@ -29,7 +31,7 @@ export const MockStateProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const stored = localStorage.getItem("currentUser");
-    if (stored) setUser(JSON.parse(stored));
+    if (stored) setTimeout(() => setUser(JSON.parse(stored)), 0);
   }, []);
   // Load user from localStorage on client-side only
 
@@ -52,6 +54,13 @@ export const MockStateProvider = ({ children }: { children: ReactNode }) => {
 
     setSkills((prev) => [...prev, newSkill]);
   };
+  const editSkill = (updatedSkill: Skill) => {
+    setSkills((prev) =>
+      prev.map((skill) =>
+        skill.id === updatedSkill.id ? updatedSkill : skill,
+      ),
+    );
+  };
   const deleteSkill = (id: string) => {
     setSkills((prev) => prev.filter((skill) => skill.id !== id));
   };
@@ -64,6 +73,7 @@ export const MockStateProvider = ({ children }: { children: ReactNode }) => {
         mockSkillData: skills,
         addSkill,
         deleteSkill,
+        editSkill,
         loginUser,
         logoutUser,
       }}

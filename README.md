@@ -86,4 +86,4 @@ Open http://localhost:3000
 
 This project is a completely free skill exchange platform that allows users to share their skills and learn new ones without any monetary transactions. Built using Next.js and TypeScript, it features a clean and modern design. The project is still in development, but it has a solid foundation that can be expanded with more features in the future.
 
-Author: Hira Khan
+Student Name: Hira Khan

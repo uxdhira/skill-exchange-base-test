@@ -1,12 +1,11 @@
-import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "./card";
-import Image from "next/image";
-import { Edit, MapPin, Star, Trash2 } from "lucide-react";
-import Link from "next/link";
-import { Button } from "./button";
-import { Skill } from "@/types";
 import { useGlobalState } from "@/hooks/useGlobalState";
+import { Skill } from "@/types";
+import { Edit, MapPin, Star, Trash2 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 import { toast } from "sonner";
+import { Button } from "./button";
+import { Card, CardContent, CardHeader, CardTitle } from "./card";
 
 const SkillCard = ({
   skill,

@@ -1,10 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -12,10 +10,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CATEGORIES } from "@/data/mockData";
-import { Search, MapPin, Star } from "lucide-react";
 import SkillCard from "@/components/ui/skill-card";
+import { CATEGORIES } from "@/data/mockData";
 import { useGlobalState } from "@/hooks/useGlobalState";
+import { MapPin, Search } from "lucide-react";
+import { useState } from "react";
 
 export default function BrowseSkills() {
   const [searchQuery, setSearchQuery] = useState("");

@@ -1,8 +1,7 @@
-import HeroSection from "@/components/blocks/hero/hero";
-import type { NavigationSection } from "@/components/ui/nav/header";
-import Header from "@/components/ui/nav/header";
 import BrandSlider from "@/components/blocks/hero/brand-slider";
 import type { AvatarList } from "@/components/blocks/hero/hero";
+import HeroSection from "@/components/blocks/hero/hero";
+import { brandListType } from "@/types";
 import {
   SiCss3,
   SiHtml5,
@@ -10,7 +9,6 @@ import {
   SiStrapi,
   SiWritedotas,
 } from "react-icons/si";
-import { brandListType } from "@/types";
 
 export default function AgencyHeroSection() {
   const avatarList: AvatarList[] = [

@@ -64,7 +64,7 @@ export const mockSkills: Skill[] = [
     location: "San Francisco, CA",
     skillLevel: "Intermediate",
     userId: "user-1",
-    userName: "Alex Johnson",
+    userName: "Hira Khan",
     userRating: 4.8,
     availability: "Weekday evenings",
     status: "accepted",
@@ -135,7 +135,7 @@ export const mockSkills: Skill[] = [
     location: "San Francisco, CA",
     skillLevel: "Beginner",
     userId: "user-1",
-    userName: "Alex Johnson",
+    userName: "Hira Khan",
     status: "accepted",
 
     userRating: 4.8,

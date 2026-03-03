@@ -1,19 +1,19 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -21,17 +21,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Textarea } from "@/components/ui/textarea";
 
 import { CATEGORIES } from "@/data/mockData";
-import { Upload, ArrowLeft } from "lucide-react";
 import { useGlobalState } from "@/hooks/useGlobalState";
 import { Skill } from "@/types";
+import { ArrowLeft, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 export default function SubmitSkillPage() {
   const router = useRouter(); // Next.js router
-  const { addSkill, user, mockSkillData } = useGlobalState();
+  const { addSkill, editSkill, user, mockSkillData } = useGlobalState();
   const searchParams = useSearchParams();
   const isEdit = searchParams.get("edit") === "true";
 
@@ -52,7 +52,7 @@ export default function SubmitSkillPage() {
     e.preventDefault();
     // alert("Skill submitted successfully! (This is a demo)");
     const newSkill: Skill = {
-      id: crypto.randomUUID(), // better than Math.random
+      id: isEdit ? skillId : crypto.randomUUID(), // better than Math.random
       title: formData.title,
       description: formData.description,
       category: formData.category,
@@ -64,9 +64,13 @@ export default function SubmitSkillPage() {
       userName: `${user?.name}`,
       createdAt: new Date().toISOString(),
       userRating: 4.8,
+      image: isEdit ? skillToEdit?.image : "", // Keep existing image if editing, else use default
     };
-    addSkill(newSkill);
-
+    if (isEdit) {
+      editSkill(newSkill);
+    } else {
+      addSkill(newSkill);
+    }
     const toastMessage = isEdit
       ? "Your skill has been updated successfully!"
       : "Your skill has been created and accepted from our Team. Happy Learning!";

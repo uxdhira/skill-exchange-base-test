@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { currentUser } from "@/data/mockData";
-import { User, MapPin, Mail, Star, Edit2, Save } from "lucide-react";
+import { Edit2, Mail, MapPin, Save, Star, User } from "lucide-react";
+import { useState } from "react";
 
 export default function MyProfile() {
   const [isEditing, setIsEditing] = useState(false);
