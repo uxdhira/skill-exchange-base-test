@@ -1,8 +1,10 @@
+// A simple type for brand items used in UI sections.
 export type brandListType = {
   icon: React.ReactNode;
   name: string;
 };
 
+// This describes a user in the skill exchange app.
 export interface User {
   id: string;
   name: string;
@@ -13,6 +15,7 @@ export interface User {
   reviewCount: number;
 }
 
+// This describes one skill listed by a user.
 export interface Skill {
   id: string;
   title: string;
@@ -29,6 +32,7 @@ export interface Skill {
   createdAt: string;
 }
 
+// This describes a booking request between two users.
 export interface Booking {
   id: string;
   skillId: string;
@@ -44,6 +48,7 @@ export interface Booking {
   createdAt: string;
 }
 
+// This describes a review left after a skill session.
 export interface Review {
   id: string;
   skillId: string;

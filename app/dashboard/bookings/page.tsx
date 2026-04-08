@@ -1,12 +1,13 @@
-"use client";
+"use client"; //By default, components are server components.
+// If we need interactivity, we add ‘use client’ to make it a client component.
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Calendar, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Calendar, CheckCircle, Clock, XCircle } from "lucide-react";
 
-// Mock data
+// This page uses local demo booking data for now.
 const bookings = [
   {
     id: 1,
@@ -36,7 +37,7 @@ const bookings = [
 
 const currentUserId = 1;
 
-// Helper functions for icons & colors
+// Return a matching icon based on booking status.
 const getIcon = (status: string) => {
   if (status === "accepted")
     return <CheckCircle className="w-5 h-5 text-green-600" />;
@@ -47,6 +48,7 @@ const getIcon = (status: string) => {
   return <Clock className="w-5 h-5 text-yellow-600" />;
 };
 
+// Return badge colors based on booking status.
 const getBadge = (status: string) => {
   if (status === "accepted") return "bg-green-100 text-green-700";
   if (status === "rejected") return "bg-red-100 text-red-700";
@@ -54,7 +56,10 @@ const getBadge = (status: string) => {
   return "bg-yellow-100 text-yellow-700";
 };
 
-// Reusable Booking Card
+/**
+ * BookingCard shows one booking request.
+ * The same card is reused for both sent and received requests.
+ */
 function BookingCard({
   booking,
   type,
@@ -124,6 +129,9 @@ function BookingCard({
   );
 }
 
+/**
+ * This page groups bookings into "sent" and "received" tabs.
+ */
 export default function MyBookings() {
   const sentBookings = bookings.filter((b) => b.requesterId === currentUserId);
   const receivedBookings = bookings.filter(

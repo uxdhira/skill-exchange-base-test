@@ -1,6 +1,9 @@
 import Footer from "@/components/blocks/footer/footer";
 import Header, { NavigationSection } from "@/components/ui/nav/header";
 import { MockStateProvider } from "@/hooks/useGlobalState";
+
+// This typed array is an example of props-ready data passed into a component.
+// These links are shown in the public landing page header.
 const navigationData: NavigationSection[] = [
   {
     title: "Home",
@@ -16,7 +19,13 @@ const navigationData: NavigationSection[] = [
     href: "#skill-categories",
   },
 ];
-// (landing)/layout.tsx
+
+/**
+ * This layout wraps the public landing pages.
+ * It adds shared state, the public header, and the footer.
+ * This is a Next.js nested layout, which is useful when multiple pages
+ * should share the same UI without repeating code.
+ */
 export default function LandingLayout({
   children,
 }: {

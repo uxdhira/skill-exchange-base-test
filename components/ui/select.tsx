@@ -6,18 +6,23 @@ import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
+// This file contains a Shadcn-style Select component built on top of Radix UI.
+// We use it when we need a better dropdown than the default HTML select.
 function Select(props: React.ComponentProps<typeof SelectPrimitive.Root>) {
   return <SelectPrimitive.Root data-slot="select" {...props} />;
 }
 
+// SelectGroup is used to group related dropdown items.
 function SelectGroup(props: React.ComponentProps<typeof SelectPrimitive.Group>) {
   return <SelectPrimitive.Group data-slot="select-group" {...props} />;
 }
 
+// SelectValue shows the currently selected value.
 function SelectValue(props: React.ComponentProps<typeof SelectPrimitive.Value>) {
   return <SelectPrimitive.Value data-slot="select-value" {...props} />;
 }
 
+// SelectTrigger is the visible button users click to open the dropdown.
 function SelectTrigger({
   className,
   size = "default",
@@ -42,6 +47,7 @@ function SelectTrigger({
   );
 }
 
+// SelectContent is the dropdown panel that opens with options.
 function SelectContent({
   className,
   children,
@@ -77,6 +83,7 @@ function SelectContent({
   );
 }
 
+// SelectLabel shows a text label inside grouped dropdown content.
 function SelectLabel({ className, ...props }: React.ComponentProps<typeof SelectPrimitive.Label>) {
   return (
     <SelectPrimitive.Label
@@ -87,6 +94,7 @@ function SelectLabel({ className, ...props }: React.ComponentProps<typeof Select
   );
 }
 
+// SelectItem is one selectable option inside the dropdown.
 function SelectItem({ className, children, ...props }: React.ComponentProps<typeof SelectPrimitive.Item>) {
   return (
     <SelectPrimitive.Item
@@ -107,10 +115,12 @@ function SelectItem({ className, children, ...props }: React.ComponentProps<type
   );
 }
 
+// SelectSeparator adds a visual line between option groups.
 function SelectSeparator({ className, ...props }: React.ComponentProps<typeof SelectPrimitive.Separator>) {
   return <SelectPrimitive.Separator data-slot="select-separator" className={cn("bg-border pointer-events-none -mx-1 my-1 h-px", className)} {...props} />;
 }
 
+// These scroll buttons appear when a dropdown has many items.
 function SelectScrollUpButton({ className, ...props }: React.ComponentProps<typeof SelectPrimitive.ScrollUpButton>) {
   return (
     <SelectPrimitive.ScrollUpButton data-slot="select-scroll-up-button" className={cn("flex cursor-default items-center justify-center py-1", className)} {...props}>

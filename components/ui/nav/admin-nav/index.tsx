@@ -10,8 +10,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SheetClose } from "../../sheet";
 
+/**
+ * AdminNavBox renders the list of dashboard links.
+ * It can work inside the normal sidebar or inside the mobile sheet.
+ */
 const AdminNavBox = ({ sheetClose = false }: { sheetClose: boolean }) => {
   const pathname = usePathname();
+
+  // These are the main links inside the dashboard area.
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "My Profile", href: "/dashboard/profile", icon: User },

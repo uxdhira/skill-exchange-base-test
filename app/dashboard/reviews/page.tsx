@@ -3,7 +3,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Star } from "lucide-react";
 
+/**
+ * This page shows review cards and a simple rating summary.
+ */
 export default function MyReviews() {
+  // Static review data used for the current prototype.
   const reviews = [
     {
       id: 1,

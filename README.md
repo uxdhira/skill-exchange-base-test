@@ -1,3 +1,5 @@
+<!-- contain instructions for running, building and deploying the application -->
+
 # SkillSpill
 
 **SkillSpill – Unlock your potential, from coding to creativity.**  
@@ -89,5 +91,5 @@ This project is a completely free skill exchange platform that allows users to s
 ### Student Details
 
 - Student Name: Hira Khan
-- Vuid: BC210423704
+- VuId: BC210423704
 - Supervisor: Amjad Iqbal Khan

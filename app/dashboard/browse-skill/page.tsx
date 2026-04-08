@@ -16,12 +16,22 @@ import { useGlobalState } from "@/hooks/useGlobalState";
 import { MapPin, Search } from "lucide-react";
 import { useState } from "react";
 
+// `use client` is required because this page uses React state and form interaction.
+// This page uses Shadcn UI components like `Card`, `Button`, `Input`, and `Select`.
+// We use them for a reusable and polished filter UI.
+
+/**
+ * This page lets users search and filter the available skills.
+ */
 export default function BrowseSkills() {
+  // Search and filter values typed by the user.
+  // `useState` is used for local UI state like search text and selected filters.
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [locationFilter, setLocationFilter] = useState("");
   const { mockSkillData } = useGlobalState();
 
+  // Keep only the skills that match all selected filters.
   const filteredSkills = mockSkillData.filter((skill) => {
     const matchesSearch =
       skill.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -35,6 +45,7 @@ export default function BrowseSkills() {
     return matchesSearch && matchesCategory && matchesLocation;
   });
 
+  // Reset all filter inputs back to their default values.
   const clearFilters = () => {
     setSearchQuery("");
     setSelectedCategory("all");

@@ -29,18 +29,34 @@ import {
 import { CgClose } from "react-icons/cg";
 import AdminNavBox from "./admin-nav";
 import UserProfileBox from "./user-profile";
+
+// `use client` is required because this dashboard navbar uses hooks and click events.
+
+/**
+ * Navbar is the top bar used inside the dashboard area.
+ * It gives quick actions, logout, and a mobile menu.
+ */
 export default function Navbar() {
+  // `useRouter` is used for redirecting after logout.
   const router = useRouter();
   const { logoutUser, user } = useGlobalState();
+
+  // `useState` keeps the mobile menu open/close state.
   const [isOpen, setIsOpen] = useState(false);
+
+  // `usePathname` reads the current URL path.
+  // It is useful when the UI needs to know which page is active.
   const pathname = usePathname();
 
+  // Close the mobile menu when the screen gets larger.
+  // `useCallback` keeps the function stable when reused.
   const handleResize = useCallback(() => {
     if (window.innerWidth >= 768) setIsOpen(false);
   }, []);
+
+  // Log the user out and send them back to the home page.
   function handleLogout() {
-    // Clear user data from localStorage
-    logoutUser(); // Redirect to login page
+    logoutUser();
     router.push("/");
   }
   const navItems = [

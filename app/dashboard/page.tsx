@@ -5,10 +5,16 @@ import { currentUser, mockBookings, mockSkills } from "@/data/mockData";
 import { Award, Calendar, Star, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
+/**
+ * This is the main dashboard home page.
+ * It gives the user a quick summary of skills, bookings, and reviews.
+ */
 export default function DashboardHomePage() {
+  // Only show skills posted by the logged-in user.
   const mySkills = mockSkills.filter(
     (skill) => skill.userId === currentUser.id,
   );
+  // Show bookings where the user is either the sender or the receiver.
   const myBookings = mockBookings.filter(
     (booking) =>
       booking.requesterId === currentUser.id ||

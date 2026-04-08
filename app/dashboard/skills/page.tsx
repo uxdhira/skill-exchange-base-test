@@ -7,9 +7,13 @@ import { useGlobalState } from "@/hooks/useGlobalState";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 
+/**
+ * This page shows only the skills created by the current user.
+ */
 export default function MySkills() {
   const { mockSkillData } = useGlobalState();
 
+  // Filter the shared skill list to this user's own skills.
   const mySkills = mockSkillData.filter(
     (skill) => skill.userId === currentUser.id,
   );

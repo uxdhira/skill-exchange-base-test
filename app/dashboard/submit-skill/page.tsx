@@ -29,16 +29,33 @@ import { Skill } from "@/types";
 import { ArrowLeft, Upload } from "lucide-react";
 import { toast } from "sonner";
 
+// `use client` is required because this page uses hooks, form events,
+// browser navigation, and interactive inputs.
+// This form uses many Shadcn UI components like `Card`, `Button`, `Input`,
+// `Label`, `Textarea`, `RadioGroup`, and `Select` for a structured form design.
+
+/**
+ * This page is used for both adding a new skill and editing an old one.
+ * It checks the URL query to decide which mode to use.
+ */
 export default function SubmitSkillPage() {
-  const router = useRouter(); // Next.js router
+  // `useRouter` is used to go back or redirect after saving.
+  const router = useRouter();
   const { addSkill, editSkill, user, mockSkillData } = useGlobalState();
+
+  // `useSearchParams` reads values from the URL query string.
+  // We use it to support edit mode like `?id=...&edit=true`.
   const searchParams = useSearchParams();
   const isEdit = searchParams.get("edit") === "true";
 
   const skillId = searchParams.get("id");
 
+  // Find the existing skill when the page is opened in edit mode.
   const skillToEdit = mockSkillData.find((s) => s.id === skillId);
 
+  // `useState` is used for controlled form inputs.
+  // We use it so input fields always stay connected to React state.
+  // Use old values in edit mode, or blank values for a new skill.
   const [formData, setFormData] = useState(() => ({
     title: skillToEdit?.title || "",
     description: skillToEdit?.description || "",
@@ -48,6 +65,7 @@ export default function SubmitSkillPage() {
     availability: skillToEdit?.availability || "",
   }));
 
+  // Create or update a skill when the form is submitted.
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // alert("Skill submitted successfully! (This is a demo)");
@@ -79,6 +97,8 @@ export default function SubmitSkillPage() {
     router.push("/dashboard/skills");
   };
 
+  // Update one field inside the form state.
+  // This supports the controlled form pattern in React.
   const handleChange = (field: string, value: string) => {
     setFormData({ ...formData, [field]: value });
   };

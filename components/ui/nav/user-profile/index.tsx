@@ -2,6 +2,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useGlobalState } from "@/hooks/useGlobalState";
 import { MapPin, Star } from "lucide-react";
 
+/**
+ * UserProfileBox shows a quick summary of the logged-in user inside the sidebar.
+ */
 const UserProfileBox = () => {
   const { user } = useGlobalState();
   return (

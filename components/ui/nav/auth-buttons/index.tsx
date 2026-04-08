@@ -4,6 +4,9 @@ import { useGlobalState } from "@/hooks/useGlobalState";
 import Link from "next/link";
 import { Button } from "../../button";
 
+/**
+ * AuthButtons shows login/register for guests and dashboard for logged-in users.
+ */
 const AuthButtons = () => {
   const { user } = useGlobalState();
 

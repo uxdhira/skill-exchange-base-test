@@ -6,6 +6,9 @@ import { Separator } from "../separator";
 import AdminNavBox from "./admin-nav";
 import UserProfileBox from "./user-profile";
 
+/**
+ * UserSidebar is the fixed left sidebar shown on dashboard pages on larger screens.
+ */
 export default function UserSidebar() {
   return (
     <aside className="hidden md:block fixed left-0 top-0 h-screen w-64 border-r bg-white p-4">

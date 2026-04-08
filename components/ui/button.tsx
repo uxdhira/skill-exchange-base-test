@@ -4,6 +4,8 @@ import { Slot } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 
+// This is a Shadcn UI button component.
+// Shadcn gives us a reusable, styled button with variants like default, outline, and ghost.
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
   {
@@ -38,6 +40,8 @@ const buttonVariants = cva(
   }
 )
 
+// This reusable Button is used across the project instead of raw HTML buttons.
+// We use Shadcn here for consistency, cleaner styling, and easy size/variant control.
 function Button({
   className,
   variant = "default",

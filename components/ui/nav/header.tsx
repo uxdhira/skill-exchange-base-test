@@ -20,6 +20,10 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import AuthButtons from "./auth-buttons";
 
+// `use client` is required because this header uses state, effects,
+// window events, and mobile menu interaction.
+
+// One navigation item used by the public landing page header.
 export type NavigationSection = {
   title: string;
   href: string;
@@ -31,19 +35,29 @@ type HeaderProps = {
   className?: string;
 };
 
+/**
+ * Header is the main public navigation bar.
+ * It handles desktop links, a mobile menu, and sticky behavior on scroll.
+ */
 const Header = ({ navigationData, className }: HeaderProps) => {
+  // `useState` keeps track of sticky mode and mobile menu state.
   const [sticky, setSticky] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  // const [mounted, setMounted] = useState(false);
 
+  // Turn on sticky styling after the user scrolls down.
+  // `useCallback` keeps this handler stable between renders.
   const handleScroll = useCallback(() => {
     setSticky(window.scrollY >= 50);
   }, []);
 
+  // Close the mobile menu when the screen becomes large.
+  // `useCallback` is also useful here for a reusable resize handler.
   const handleResize = useCallback(() => {
     if (window.innerWidth >= 768) setIsOpen(false);
   }, []);
 
+  // Add and remove browser event listeners safely.
+  // `useEffect` is used because event listeners are side effects.
   useEffect(() => {
     window.addEventListener("scroll", handleScroll);
     window.addEventListener("resize", handleResize);

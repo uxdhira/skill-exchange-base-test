@@ -9,19 +9,27 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "../../ui/button";
 
+// Props needed to show a single skill details page.
 interface SkillDetailsProps {
   skill: Skill;
   isOwner?: boolean;
   backUrl?: string;
 }
 
+/**
+ * This component shows full details of one skill.
+ * It is reused by the landing area and dashboard detail pages.
+ */
 export default function SkillDetailsView({
   skill,
   isOwner,
   backUrl,
 }: SkillDetailsProps) {
   const router = useRouter();
+
+  // Show a simple message if no skill was found.
   if (!skill) return <p className="p-6">Skill not found</p>;
+
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6">
       <Button

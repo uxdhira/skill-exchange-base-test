@@ -1,8 +1,9 @@
-// Mock data store for the skill exchange platform
+// This file stores demo data used across the prototype.
+// It acts like a temporary database until a real backend is connected.
 
 import { Booking, Review, Skill, User } from "@/types";
 
-// Current logged-in user
+// Demo user used as the current logged-in person.
 export const currentUser: User = {
   id: "user-1",
   name: "Hira Khan",
@@ -12,7 +13,7 @@ export const currentUser: User = {
   reviewCount: 24,
 };
 
-// Mock users
+// Sample users shown in the app.
 export const users: User[] = [
   currentUser,
   {
@@ -41,7 +42,7 @@ export const users: User[] = [
   },
 ];
 
-// Categories
+// Skill categories used in filters and forms.
 export const CATEGORIES = [
   "All",
   "Cognitive",
@@ -53,7 +54,7 @@ export const CATEGORIES = [
   "Language",
 ];
 
-// Mock skills
+// Sample skills shown on the landing page and dashboard.
 export const mockSkills: Skill[] = [
   {
     id: "skill-1",
@@ -199,7 +200,7 @@ export const mockSkills: Skill[] = [
       "https://images.unsplash.com/photo-1484101403633-562f891dc89a?q=80&w=600",
   },
 ];
-// Mock bookings
+// Demo bookings between users.
 export const mockBookings: Booking[] = [
   {
     id: "booking-1",
@@ -232,7 +233,7 @@ export const mockBookings: Booking[] = [
   },
 ];
 
-// Mock reviews
+// Demo reviews left by users after skill exchange sessions.
 export const mockReviews: Review[] = [
   {
     id: "review-1",

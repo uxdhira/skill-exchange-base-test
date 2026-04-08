@@ -9,7 +9,13 @@ import { currentUser } from "@/data/mockData";
 import { Edit2, Mail, MapPin, Save, Star, User } from "lucide-react";
 import { useState } from "react";
 
+// `use client` is required because this page uses local state and edit actions.
+
+/**
+ * This page shows the user's profile and allows simple editing in demo mode.
+ */
 export default function MyProfile() {
+  // `useState` is used for local UI state like edit mode and form values.
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: currentUser.name,
@@ -18,6 +24,7 @@ export default function MyProfile() {
     bio: "Passionate about learning and sharing knowledge. Always excited to connect with new people and exchange skills!",
   });
 
+  // Save the form and leave edit mode.
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsEditing(false);
@@ -25,6 +32,7 @@ export default function MyProfile() {
     alert("Profile updated successfully! (This is a demo)");
   };
 
+  // Update one field in the profile form.
   const handleChange = (field: string, value: string) => {
     setFormData({ ...formData, [field]: value });
   };

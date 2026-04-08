@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Button } from "./button";
 import { Card, CardContent, CardHeader, CardTitle } from "./card";
 
+// Props used by the reusable skill card.
 const SkillCard = ({
   skill,
   isEditEnabled = false,
@@ -16,6 +17,7 @@ const SkillCard = ({
   isEditEnabled?: boolean;
   directUrl?: string;
 }) => {
+  // This card shows the main information for one skill.
   return (
     <Card
       key={skill.id}
@@ -79,10 +81,14 @@ const SkillCard = ({
 
 export default SkillCard;
 
+/**
+ * EditSkill shows edit and delete actions when the card is used on the user's own skills page.
+ */
 const EditSkill = ({ skill }: { skill: Skill }) => {
   const { deleteSkill } = useGlobalState();
+
+  // Delete the skill from shared state and show a success message.
   function handleDelete(skillId: string) {
-    // Implement delete functionality here
     deleteSkill(skillId);
     toast("This skill has been deleted.", { position: "top-center" });
   }
