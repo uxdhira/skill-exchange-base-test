@@ -3,27 +3,34 @@ import {
   Briefcase,
   Calendar,
   LayoutDashboard,
+  Lightbulb,
   MessageSquare,
+  Settings,
   User,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SheetClose } from "../../sheet";
 
-/**
- * AdminNavBox renders the list of dashboard links.
- * It can work inside the normal sidebar or inside the mobile sheet.
- */
 const AdminNavBox = ({ sheetClose = false }: { sheetClose: boolean }) => {
   const pathname = usePathname();
 
-  // These are the main links inside the dashboard area.
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "My Profile", href: "/dashboard/profile", icon: User },
-    { name: "My Skills", href: "/dashboard/skills", icon: Briefcase },
+    {
+      name: "Offered Skills",
+      href: "/dashboard/offered-skills",
+      icon: Briefcase,
+    },
+    {
+      name: "Requested Skills",
+      href: "/dashboard/requested-skills",
+      icon: Lightbulb,
+    },
     { name: "Bookings", href: "/dashboard/bookings", icon: Calendar },
     { name: "Reviews", href: "/dashboard/reviews", icon: MessageSquare },
+    { name: "Settings", href: "/dashboard/settings", icon: Settings },
   ];
   return (
     <nav className="mt-6 space-y-1">

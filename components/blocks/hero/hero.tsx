@@ -1,9 +1,9 @@
 "use client";
 
-import { Instrument_Serif } from "next/font/google";
 import { Button } from "@/components/ui/button";
-import { motion } from "motion/react";
 import { ArrowUpRight } from "lucide-react";
+import { motion } from "motion/react";
+import { Instrument_Serif } from "next/font/google";
 import Link from "next/link";
 
 const instrumentSerif = Instrument_Serif({
@@ -63,7 +63,7 @@ function HeroSection({ avatarList }: HeroSectionProps) {
                   asChild
                   className="relative text-sm font-medium rounded-full h-12 p-1 ps-6 pe-14 group transition-all duration-500 hover:ps-14 hover:pe-6 w-fit overflow-hidden"
                 >
-                  <Link href="/#skill-categories">
+                  <Link href="/browse">
                     <span className="relative z-10 transition-all duration-500">
                       Browse Skills
                     </span>

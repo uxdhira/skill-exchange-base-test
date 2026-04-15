@@ -94,7 +94,7 @@ export default function SubmitSkillPage() {
       : "Your skill has been created and accepted from our Team. Happy Learning!";
     toast(toastMessage, { position: "top-center" });
 
-    router.push("/dashboard/skills");
+    router.push("/dashboard/offered-skills");
   };
 
   // Update one field inside the form state.

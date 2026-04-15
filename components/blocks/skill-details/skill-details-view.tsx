@@ -98,6 +98,28 @@ export default function SkillDetailsView({
             </div>
           </div>
 
+          <div>
+            <h3 className="font-bold text-lg mb-3">Additional Information</h3>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="space-y-1">
+                <p className="text-slate-500">Skill Level</p>
+                <p className="font-medium">{skill.skillLevel}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-slate-500">Category</p>
+                <p className="font-medium">{skill.category}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-slate-500">Location</p>
+                <p className="font-medium">{skill.location}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-slate-500">Availability</p>
+                <p className="font-medium">Weekday evenings</p>
+              </div>
+            </div>
+          </div>
+
           {isOwner && (
             <div className="bg-blue-50 p-4 rounded-lg flex gap-3">
               <Info className="h-5 w-5 text-blue-500" />

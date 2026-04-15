@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -10,30 +10,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import SkillCard from "@/components/ui/skill-card";
-import { CATEGORIES } from "@/data/mockData";
-import { useGlobalState } from "@/hooks/useGlobalState";
-import { MapPin, Search } from "lucide-react";
+import { mockSkills } from "@/data/mockData";
+import { MapPin, Search, Star } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
-// `use client` is required because this page uses React state and form interaction.
-// This page uses Shadcn UI components like `Card`, `Button`, `Input`, and `Select`.
-// We use them for a reusable and polished filter UI.
-
-/**
- * This page lets users search and filter the available skills.
- */
 export default function BrowseSkills() {
-  // Search and filter values typed by the user.
-  // `useState` is used for local UI state like search text and selected filters.
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [locationFilter, setLocationFilter] = useState("");
-  const { mockSkillData } = useGlobalState();
   const [selectedRating, setSelectedRating] = useState<string>("all");
 
-  // Keep only the skills that match all selected filters.
-  const filteredSkills = mockSkillData.filter((skill) => {
+  const categories = Array.from(
+    new Set(mockSkills.map((skill) => skill.category)),
+  );
+
+  const filteredSkills = mockSkills.filter((skill) => {
     const matchesSearch =
       skill.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       skill.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -42,21 +34,12 @@ export default function BrowseSkills() {
     const matchesLocation =
       !locationFilter ||
       skill.location.toLowerCase().includes(locationFilter.toLowerCase());
-
     const matchesRating =
       selectedRating === "all" ||
       skill.userRating >= parseFloat(selectedRating);
 
     return matchesSearch && matchesCategory && matchesLocation && matchesRating;
   });
-
-  // Reset all filter inputs back to their default values.
-  const clearFilters = () => {
-    setSearchQuery("");
-    setSelectedCategory("all");
-    setLocationFilter("");
-    setSelectedRating("all");
-  };
 
   return (
     <div className="space-y-6">
@@ -71,7 +54,6 @@ export default function BrowseSkills() {
       <Card>
         <CardContent className="pt-6">
           <div className="grid md:grid-cols-4 gap-4">
-            {/* Search */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Search Skills</label>
               <div className="relative">
@@ -85,7 +67,6 @@ export default function BrowseSkills() {
               </div>
             </div>
 
-            {/* Category */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Category</label>
               <Select
@@ -97,7 +78,7 @@ export default function BrowseSkills() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
-                  {CATEGORIES.map((category) => (
+                  {categories.map((category) => (
                     <SelectItem key={category} value={category}>
                       {category}
                     </SelectItem>
@@ -106,7 +87,6 @@ export default function BrowseSkills() {
               </Select>
             </div>
 
-            {/* Location */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Location</label>
               <div className="relative">
@@ -119,7 +99,7 @@ export default function BrowseSkills() {
                 />
               </div>
             </div>
-            {/* Rating */}
+
             <div className="space-y-2">
               <label className="text-sm font-medium">Rating</label>
               <Select value={selectedRating} onValueChange={setSelectedRating}>
@@ -138,10 +118,19 @@ export default function BrowseSkills() {
         </CardContent>
       </Card>
 
-      {/* Results info */}
+      {/* Results */}
       <div className="flex items-center justify-between">
         <p className="text-gray-600">{filteredSkills.length} skills found</p>
-        <Button variant="outline" size="sm" onClick={clearFilters}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            setSearchQuery("");
+            setSelectedCategory("all");
+            setLocationFilter("");
+            setSelectedRating("all");
+          }}
+        >
           Clear Filters
         </Button>
       </div>
@@ -149,11 +138,40 @@ export default function BrowseSkills() {
       {/* Skill Cards Grid */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredSkills.map((skill) => (
-          <SkillCard
-            key={skill.id}
-            skill={skill}
-            directUrl={`/dashboard/skill-details/${skill.id}`}
-          />
+          <Card key={skill.id} className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex items-start justify-between mb-2">
+                <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">
+                  {skill.category}
+                </span>
+                <span className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded-full">
+                  {skill.skillLevel}
+                </span>
+              </div>
+              <CardTitle className="text-xl">{skill.title}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-gray-600 line-clamp-3">
+                {skill.description}
+              </p>
+
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2 text-gray-600">
+                  <MapPin className="w-4 h-4" />
+                  {skill.location}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  <span className="font-medium">{skill.userRating}</span>
+                  <span className="text-gray-500">• {skill.userName}</span>
+                </div>
+              </div>
+
+              <Link href={`/dashboard/skill/${skill.id}`}>
+                <Button className="w-full">View Details</Button>
+              </Link>
+            </CardContent>
+          </Card>
         ))}
       </div>
 
@@ -165,7 +183,15 @@ export default function BrowseSkills() {
             <p className="text-gray-600 mb-4">
               Try adjusting your filters or search query
             </p>
-            <Button variant="outline" onClick={clearFilters}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSearchQuery("");
+                setSelectedCategory("all");
+                setLocationFilter("");
+                setSelectedRating("all");
+              }}
+            >
               Clear All Filters
             </Button>
           </CardContent>

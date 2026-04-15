@@ -23,7 +23,9 @@ import {
   Briefcase,
   Calendar,
   LayoutDashboard,
+  Lightbulb,
   MessageSquare,
+  Settings,
   User,
 } from "lucide-react";
 import { CgClose } from "react-icons/cg";
@@ -62,9 +64,11 @@ export default function Navbar() {
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "My Profile", href: "/dashboard/profile", icon: User },
-    { name: "My Skills", href: "/dashboard/skills", icon: Briefcase },
+    { name: "My Skills", href: "/dashboard/offered-skills", icon: Briefcase },
+    { name: "Requested Skills", href: "/dashboard/requested-skills", icon: Lightbulb },
     { name: "Bookings", href: "/dashboard/bookings", icon: Calendar },
     { name: "Reviews", href: "/dashboard/reviews", icon: MessageSquare },
+    { name: "Settings", href: "/dashboard/settings", icon: Settings },
   ];
 
   return (

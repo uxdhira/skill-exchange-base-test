@@ -1,6 +1,6 @@
 import { Separator } from "@/components/ui/separator";
+import { Dribbble, Instagram, Linkedin, Twitter, Zap } from "lucide-react";
 import Link from "next/link";
-import { Zap, Twitter, Linkedin, Dribbble, Instagram } from "lucide-react";
 
 type FooterData = {
   title: string;
@@ -20,13 +20,21 @@ const footerSections: FooterData[] = [
       },
 
       {
-        title: "How It Works",
-        href: "/#how-it-works",
+        title: "Browse Skills",
+        href: "/browse",
       },
 
       {
-        title: "Skills",
-        href: "/#skill-categories",
+        title: "About Us",
+        href: "/about",
+      },
+      {
+        title: "FAQ",
+        href: "/Faq",
+      },
+      {
+        title: "Policies",
+        href: "/policies",
       },
     ],
   },

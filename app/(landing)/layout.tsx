@@ -7,16 +7,24 @@ import { MockStateProvider } from "@/hooks/useGlobalState";
 const navigationData: NavigationSection[] = [
   {
     title: "Home",
-    href: "#",
+    href: "/",
     isActive: true,
   },
   {
-    title: "How It Works",
-    href: "#how-it-works",
+    title: "Browse Skills",
+    href: "/browse",
   },
   {
-    title: "Skills",
-    href: "#skill-categories",
+    title: "About Us",
+    href: "/about",
+  },
+  {
+    title: "FAQ",
+    href: "/faq",
+  },
+  {
+    title: "Policies",
+    href: "/policies",
   },
 ];
 
