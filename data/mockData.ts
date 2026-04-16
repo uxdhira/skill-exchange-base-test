@@ -1,7 +1,7 @@
 // This file stores demo data used across the prototype.
 // It acts like a temporary database until a real backend is connected.
 
-import { Booking, Review, Skill, User } from "@/types";
+import { Booking, RequestedSkill, Review, Skill, User } from "@/types";
 
 // Demo user used as the current logged-in person.
 export const currentUser: User = {
@@ -70,8 +70,9 @@ export const mockSkills: Skill[] = [
     availability: "Weekday evenings",
     status: "accepted",
     createdAt: "2026-02-15",
-    image:
-      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=600",
+    image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=600",
+    mode: "hybrid",
+    duration: "2 hours",
   },
   {
     id: "skill-2",
@@ -84,12 +85,12 @@ export const mockSkills: Skill[] = [
     userId: "user-2",
     userName: "Sarah Miller",
     userRating: 4.9,
-    status: "accepted",
-
     availability: "Flexible schedule",
+    status: "accepted",
     createdAt: "2026-02-18",
-    image:
-      "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=600",
+    image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=600",
+    mode: "online",
+    duration: "1 hour",
   },
   {
     id: "skill-3",
@@ -101,13 +102,13 @@ export const mockSkills: Skill[] = [
     skillLevel: "Intermediate",
     userId: "user-3",
     userName: "Mike Chen",
-    status: "accepted",
-
     userRating: 4.7,
     availability: "Weekends only",
+    status: "accepted",
     createdAt: "2026-02-10",
-    image:
-      "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?q=80&w=600",
+    image: "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?q=80&w=600",
+    mode: "in_person",
+    duration: "1.5 hours",
   },
   {
     id: "skill-4",
@@ -118,14 +119,14 @@ export const mockSkills: Skill[] = [
     location: "Seattle, WA",
     skillLevel: "Intermediate",
     status: "accepted",
-
     userId: "user-4",
     userName: "Emma Davis",
     userRating: 4.6,
     availability: "Weekend mornings",
     createdAt: "2026-02-20",
-    image:
-      "https://images.unsplash.com/photo-1492724441997-5dc865305da7?q=80&w=600",
+    image: "https://images.unsplash.com/photo-1492724441997-5dc865305da7?q=80&w=600",
+    mode: "hybrid",
+    duration: "2 hours",
   },
   {
     id: "skill-5",
@@ -138,12 +139,12 @@ export const mockSkills: Skill[] = [
     userId: "user-1",
     userName: "Hira Khan",
     status: "accepted",
-
     userRating: 4.8,
     availability: "Weekday evenings",
     createdAt: "2026-02-12",
-    image:
-      "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=600",
+    image: "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=600",
+    mode: "online",
+    duration: "2 hours",
   },
   {
     id: "skill-6",
@@ -156,12 +157,12 @@ export const mockSkills: Skill[] = [
     userId: "user-2",
     userName: "Sarah Miller",
     status: "accepted",
-
     userRating: 4.9,
     availability: "Early mornings",
     createdAt: "2026-02-14",
-    image:
-      "https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=600",
+    image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=600",
+    mode: "in_person",
+    duration: "1 hour",
   },
   {
     id: "skill-7",
@@ -175,11 +176,11 @@ export const mockSkills: Skill[] = [
     userName: "Mike Chen",
     userRating: 4.7,
     status: "accepted",
-
     availability: "Afternoons",
     createdAt: "2026-02-16",
-    image:
-      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=600",
+    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=600",
+    mode: "hybrid",
+    duration: "1.5 hours",
   },
   {
     id: "skill-8",
@@ -193,13 +194,14 @@ export const mockSkills: Skill[] = [
     userName: "Emma Davis",
     userRating: 4.6,
     status: "accepted",
-
     availability: "Weekends",
     createdAt: "2026-02-19",
-    image:
-      "https://images.unsplash.com/photo-1484101403633-562f891dc89a?q=80&w=600",
+    image: "https://images.unsplash.com/photo-1484101403633-562f891dc89a?q=80&w=600",
+    mode: "in_person",
+    duration: "2 hours",
   },
 ];
+
 // Demo bookings between users.
 export const mockBookings: Booking[] = [
   {
@@ -209,13 +211,16 @@ export const mockBookings: Booking[] = [
     offeredSkillId: "skill-1",
     offeredSkillTitle: "Web Design Basics",
     requesterId: "user-1",
-    requesterName: "Alex Johnson",
+    requesterName: "Hira Khan",
     providerId: "user-2",
     providerName: "Sarah Miller",
     message:
       "Hi! I would love to practice Spanish with you. I can offer web design help in return.",
     status: "accepted",
     createdAt: "2026-02-21",
+    date: "2026-04-20",
+    time: "10:00 AM",
+    location: "Online",
   },
   {
     id: "booking-2",
@@ -224,12 +229,66 @@ export const mockBookings: Booking[] = [
     offeredSkillId: "skill-5",
     offeredSkillTitle: "Python Programming Introduction",
     requesterId: "user-1",
-    requesterName: "Alex Johnson",
+    requesterName: "Hira Khan",
     providerId: "user-3",
     providerName: "Mike Chen",
     message: "Interested in learning guitar! Can teach you Python in exchange.",
     status: "pending",
     createdAt: "2026-02-22",
+    date: "2026-04-25",
+    time: "2:00 PM",
+    location: "Austin, TX",
+  },
+  {
+    id: "booking-3",
+    skillId: "skill-4",
+    skillTitle: "Digital Photography Tips",
+    offeredSkillId: "skill-6",
+    offeredSkillTitle: "Yoga for Beginners",
+    requesterId: "user-4",
+    requesterName: "Emma Davis",
+    providerId: "user-1",
+    providerName: "Hira Khan",
+    message: "I would love to learn photography! Can offer yoga in exchange.",
+    status: "pending",
+    createdAt: "2026-04-10",
+    date: "2026-04-22",
+    time: "11:00 AM",
+    location: "Seattle, WA",
+  },
+  {
+    id: "booking-4",
+    skillId: "skill-1",
+    skillTitle: "Web Design Basics",
+    offeredSkillId: "skill-2",
+    offeredSkillTitle: "Spanish Conversation Practice",
+    requesterId: "user-3",
+    requesterName: "Mike Chen",
+    providerId: "user-1",
+    providerName: "Hira Khan",
+    message: "Interested in learning web design! Can teach you guitar.",
+    status: "complete",
+    createdAt: "2026-03-10",
+    date: "2026-03-15",
+    time: "4:00 PM",
+    location: "San Francisco, CA",
+  },
+  {
+    id: "booking-5",
+    skillId: "skill-2",
+    skillTitle: "Spanish Conversation Practice",
+    offeredSkillId: "skill-1",
+    offeredSkillTitle: "Web Design Basics",
+    requesterId: "user-1",
+    requesterName: "Hira Khan",
+    providerId: "user-2",
+    providerName: "Sarah Miller",
+    message: "Excited to learn Spanish from you!",
+    status: "complete",
+    createdAt: "2026-01-15",
+    date: "2026-01-20",
+    time: "10:00 AM",
+    location: "Online",
   },
 ];
 
@@ -256,5 +315,64 @@ export const mockReviews: Review[] = [
     comment:
       "Great experience! Alex explained everything clearly and provided helpful resources.",
     createdAt: "2026-02-18",
+  },
+];
+
+export const mockRequestedSkills: RequestedSkill[] = [
+  {
+    id: "req-1",
+    title: "Web Development - React",
+    category: "Technical",
+    description: "Looking for someone to teach React fundamentals and hooks",
+    preferredSchedule: "Weekends, flexible hours",
+    location: "New York, NY",
+    priority: "High",
+    status: "active",
+    matchCount: 5,
+    userId: "user-1",
+    userName: "Hira Khan",
+    createdAt: "2026-02-15",
+  },
+  {
+    id: "req-2",
+    title: "Guitar Lessons",
+    category: "Personal",
+    description: "Want to learn acoustic guitar, beginner level",
+    preferredSchedule: "Evenings after 6 PM",
+    location: "Brooklyn, NY",
+    priority: "Medium",
+    status: "matched",
+    matchCount: 2,
+    userId: "user-1",
+    userName: "Hira Khan",
+    createdAt: "2026-02-10",
+  },
+  {
+    id: "req-3",
+    title: "Spanish Conversation",
+    category: "Language",
+    description: "Looking to improve Spanish speaking skills",
+    preferredSchedule: "Weekend mornings",
+    location: "Online",
+    priority: "Low",
+    status: "active",
+    matchCount: 3,
+    userId: "user-2",
+    userName: "Sarah Miller",
+    createdAt: "2026-03-01",
+  },
+  {
+    id: "req-4",
+    title: "Photography Basics",
+    category: "Digital",
+    description: "Want to learn digital photography and photo editing",
+    preferredSchedule: "Flexible",
+    location: "Seattle, WA",
+    priority: "Medium",
+    status: "closed",
+    matchCount: 0,
+    userId: "user-4",
+    userName: "Emma Davis",
+    createdAt: "2026-01-20",
   },
 ];

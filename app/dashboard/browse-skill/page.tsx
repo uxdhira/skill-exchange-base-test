@@ -62,7 +62,7 @@ export default function BrowseSkills() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold mb-2">Browse Skills</h1>
-        <p className="text-gray-600">
+        <p className="text-lg text-muted-foreground text-slate-700 font-semibold">
           Discover skills offered by community members
         </p>
       </div>
@@ -149,11 +149,15 @@ export default function BrowseSkills() {
       {/* Skill Cards Grid */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredSkills.map((skill) => (
-          <SkillCard
+          <div
             key={skill.id}
-            skill={skill}
-            directUrl={`/dashboard/skill-details/${skill.id}`}
-          />
+            className="bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-lg transition-all hover:-translate-y-1"
+          >
+            <SkillCard
+              skill={skill}
+              directUrl={`/dashboard/skill-details/${skill.id}`}
+            />
+          </div>
         ))}
       </div>
 

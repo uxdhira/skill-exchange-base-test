@@ -29,49 +29,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Edit, Plus, Trash2, Users } from "lucide-react";
+import { Clock, Edit, MapPin, Monitor, Plus, Trash2, Users } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
-
-interface RequestedSkill {
-  id: string;
-  title: string;
-  category: string;
-  description: string;
-  preferredSchedule: string;
-  location: string;
-  priority: string;
-  status: "Active" | "Matched" | "Closed";
-  matchCount: number;
-}
-
-const mockRequestedSkills: RequestedSkill[] = [
-  {
-    id: "1",
-    title: "Web Development - React",
-    category: "Technology",
-    description: "Looking for someone to teach React fundamentals and hooks",
-    preferredSchedule: "Weekends, flexible hours",
-    location: "New York, NY",
-    priority: "High",
-    status: "Active",
-    matchCount: 5,
-  },
-  {
-    id: "2",
-    title: "Guitar Lessons",
-    category: "Music",
-    description: "Want to learn acoustic guitar, beginner level",
-    preferredSchedule: "Evenings after 6 PM",
-    location: "Brooklyn, NY",
-    priority: "Medium",
-    status: "Matched",
-    matchCount: 2,
-  },
-];
+import { mockRequestedSkills, mockSkills } from "@/data/mockData";
+import { RequestedSkill } from "@/types";
 
 const categories = [
-  "Technology",
+  "Technical",
   "Music",
   "Art & Design",
   "Language",
@@ -85,14 +51,22 @@ export default function RequestedSkills() {
   const [skills, setSkills] = useState<RequestedSkill[]>(mockRequestedSkills);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingSkill, setEditingSkill] = useState<RequestedSkill | null>(null);
+  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedTime, setSelectedTime] = useState("");
+  const [selectedSkillForMatches, setSelectedSkillForMatches] = useState<RequestedSkill | null>(null);
+  const [matchesDialogOpen, setMatchesDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     category: "",
     description: "",
     preferredSchedule: "",
     location: "",
-    priority: "Medium",
+    priority: "Medium" as "High" | "Medium" | "Low",
   });
+
+  const currentUserId = "user-1";
+
+  const myRequestedSkills = skills.filter((s) => s.userId === currentUserId);
 
   const generateId = () => {
     return crypto
@@ -114,8 +88,11 @@ export default function RequestedSkills() {
       const newSkill: RequestedSkill = {
         id: generateId(),
         ...formData,
-        status: "Active",
+        status: "active",
         matchCount: 0,
+        userId: currentUserId,
+        userName: "Hira Khan",
+        createdAt: new Date().toISOString().split("T")[0],
       };
       setSkills([newSkill, ...skills]);
       toast.success("Skill request submitted successfully");
@@ -155,13 +132,18 @@ export default function RequestedSkills() {
     });
   };
 
+  const handleViewMatches = (skill: RequestedSkill) => {
+    setSelectedSkillForMatches(skill);
+    setMatchesDialogOpen(true);
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Active":
+      case "active":
         return "bg-blue-500";
-      case "Matched":
+      case "matched":
         return "bg-green-500";
-      case "Closed":
+      case "closed":
         return "bg-gray-500";
       default:
         return "bg-gray-500";
@@ -198,7 +180,7 @@ export default function RequestedSkills() {
               Request New Skill
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
               <DialogTitle>
                 {editingSkill ? "Edit Skill Request" : "Request a New Skill"}
@@ -275,39 +257,61 @@ export default function RequestedSkills() {
                     required
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Preferred Date
+                  </label>
+                  <input
+                    type="date"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    min={new Date().toISOString().split("T")[0]}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="location">Location *</Label>
-                    <Input
-                      id="location"
-                      placeholder="City, State or Online"
-                      value={formData.location}
-                      onChange={(e) =>
-                        setFormData({ ...formData, location: e.target.value })
-                      }
-                      required
-                    />
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Preferred Time
+                  </label>
+                  <input
+                    type="time"
+                    value={selectedTime}
+                    onChange={(e) => setSelectedTime(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="priority">Priority</Label>
-                    <Select
-                      value={formData.priority}
-                      onValueChange={(value) =>
-                        setFormData({ ...formData, priority: value })
-                      }
-                    >
-                      <SelectTrigger id="priority">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="High">High</SelectItem>
-                        <SelectItem value="Medium">Medium</SelectItem>
-                        <SelectItem value="Low">Low</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="location">Location *</Label>
+                  <Input
+                    id="location"
+                    placeholder="City, State or Online"
+                    value={formData.location}
+                    onChange={(e) =>
+                      setFormData({ ...formData, location: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Priority</Label>
+                  <Select
+                    value={formData.priority}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, priority: value as "High" | "Medium" | "Low" })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="High">High</SelectItem>
+                      <SelectItem value="Medium">Medium</SelectItem>
+                      <SelectItem value="Low">Low</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -328,7 +332,7 @@ export default function RequestedSkills() {
         </Dialog>
       </div>
 
-      {skills.length === 0 ? (
+      {myRequestedSkills.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16">
             <Users className="h-12 w-12 text-muted-foreground mb-4" />
@@ -345,7 +349,7 @@ export default function RequestedSkills() {
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {skills.map((skill) => (
+          {myRequestedSkills.map((skill) => (
             <Card key={skill.id}>
               <CardHeader>
                 <div className="flex justify-between items-start">
@@ -411,7 +415,7 @@ export default function RequestedSkills() {
                   <Trash2 className="h-4 w-4" />
                 </Button>
                 {skill.matchCount > 0 && (
-                  <Button size="sm" className="flex-1">
+                  <Button size="sm" className="flex-1" onClick={() => handleViewMatches(skill)}>
                     View Matches
                   </Button>
                 )}
@@ -420,6 +424,65 @@ export default function RequestedSkills() {
           ))}
         </div>
       )}
+
+      <Dialog open={matchesDialogOpen} onOpenChange={setMatchesDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Matched Skills</DialogTitle>
+            <DialogDescription>
+              Skills that match your request for "{selectedSkillForMatches?.title}"
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {selectedSkillForMatches && (
+              <div className="grid gap-4">
+                {mockSkills
+                  .filter((s) => s.category === selectedSkillForMatches.category)
+                  .slice(0, 3)
+                  .map((skill) => (
+                    <Link
+                      key={skill.id}
+                      href={`/dashboard/skill-details/${skill.id}`}
+                      className="block p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex gap-2 mb-2">
+                        <Badge className="bg-blue-100 text-blue-700">{skill.category}</Badge>
+                        <Badge className="bg-purple-100 text-purple-700">{skill.skillLevel}</Badge>
+                      </div>
+                      <h3 className="font-semibold mb-1">{skill.title}</h3>
+                      <p className="text-sm text-gray-600 line-clamp-2 mb-2">
+                        {skill.description}
+                      </p>
+                      <div className="flex items-center gap-3 text-sm text-gray-600">
+                        <span className="flex items-center gap-1">
+                          <Monitor className="w-3 h-3" />
+                          <span className="capitalize">{skill.mode.replace("_", " ")}</span>
+                        </span>
+                        <span>·</span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {skill.duration}
+                        </span>
+                        <span>·</span>
+                        <span className="flex items-center gap-1">
+                          <MapPin className="w-3 h-3" />
+                          {skill.location}
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setMatchesDialogOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

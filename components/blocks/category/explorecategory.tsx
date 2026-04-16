@@ -2,6 +2,8 @@
 
 import SkillCard from "@/components/ui/skill-card";
 import { CATEGORIES, mockSkills } from "@/data/mockData";
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 export default function SkillCategories() {
@@ -19,6 +21,15 @@ export default function SkillCategories() {
         <h2 className="text-3xl font-bold text-center mb-8">
           Popular Skill Categories
         </h2>
+        <div className="text-center mb-8">
+          <Link
+            href="/browse"
+            className="text-purple-600 hover:text-purple-700 font-semibold flex justify-end gap-2"
+          >
+            View All
+            <ArrowRight className="w-5 h-5" />
+          </Link>
+        </div>
 
         {/* CATEGORY BUTTONS */}
         <div className="flex flex-wrap justify-center gap-2 mb-12">
@@ -40,11 +51,12 @@ export default function SkillCategories() {
         {/* SKILLS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredSkills.map((skill) => (
-            <SkillCard
+            <div
               key={skill.id}
-              skill={skill}
-              directUrl={`/skill/${skill.id}`}
-            />
+              className="bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-lg transition-all hover:-translate-y-1"
+            >
+              <SkillCard skill={skill} directUrl={`/skill/${skill.id}`} />
+            </div>
           ))}
         </div>
 

@@ -1,4 +1,5 @@
 "use client";
+
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -20,10 +21,6 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import AuthButtons from "./auth-buttons";
 
-// `use client` is required because this header uses state, effects,
-// window events, and mobile menu interaction.
-
-// One navigation item used by the public landing page header.
 export type NavigationSection = {
   title: string;
   href: string;
@@ -35,29 +32,18 @@ type HeaderProps = {
   className?: string;
 };
 
-/**
- * Header is the main public navigation bar.
- * It handles desktop links, a mobile menu, and sticky behavior on scroll.
- */
-const Header = ({ navigationData, className }: HeaderProps) => {
-  // `useState` keeps track of sticky mode and mobile menu state.
+export default function Header({ navigationData, className }: HeaderProps) {
   const [sticky, setSticky] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  // Turn on sticky styling after the user scrolls down.
-  // `useCallback` keeps this handler stable between renders.
   const handleScroll = useCallback(() => {
     setSticky(window.scrollY >= 50);
   }, []);
 
-  // Close the mobile menu when the screen becomes large.
-  // `useCallback` is also useful here for a reusable resize handler.
   const handleResize = useCallback(() => {
     if (window.innerWidth >= 768) setIsOpen(false);
   }, []);
 
-  // Add and remove browser event listeners safely.
-  // `useEffect` is used because event listeners are side effects.
   useEffect(() => {
     window.addEventListener("scroll", handleScroll);
     window.addEventListener("resize", handleResize);
@@ -87,19 +73,13 @@ const Header = ({ navigationData, className }: HeaderProps) => {
             : "bg-transparent border-transparent",
         )}
       >
-        {/* Logo */}
-
         <div>
           <Link href="/" className="flex items-center gap-3">
-            {/* Purple Icon */}
             <Zap size={38} className="text-purple-700" />
-
-            {/* Deep Blue Text */}
             <span className="text-2xl font-bold text-blue-950">SkillSpill</span>
           </Link>
         </div>
 
-        {/* Desktop Navigation */}
         <div>
           <NavigationMenu className="max-lg:hidden bg-muted p-0.5 rounded-full justify-between">
             <NavigationMenuList className="flex gap-0">
@@ -120,127 +100,111 @@ const Header = ({ navigationData, className }: HeaderProps) => {
           </NavigationMenu>
         </div>
 
-        {/* Desktop CTA */}
         <div className="flex gap-4">
-          <div className="hidden lg:block  space-x-2 ">
+          <div className="hidden lg:block space-x-2">
             <AuthButtons />
           </div>
           <div className="lg:hidden">
-            {true ? (
-              <Sheet open={isOpen} onOpenChange={setIsOpen}>
-                <SheetTrigger id="mobile-menu-trigger">
-                  <span className="rounded-full border border-border p-2 block">
-                    <Icon
-                      icon="solar:hamburger-menu-linear"
-                      width={20}
-                      height={20}
-                    />
-                    <span className="sr-only">Menu</span>
-                  </span>
-                </SheetTrigger>
+            <Sheet open={isOpen} onOpenChange={setIsOpen}>
+              <SheetTrigger id="mobile-menu-trigger">
+                <span className="rounded-full border border-border p-2 block">
+                  <Icon
+                    icon="solar:hamburger-menu-linear"
+                    width={20}
+                    height={20}
+                  />
+                  <span className="sr-only">Menu</span>
+                </span>
+              </SheetTrigger>
 
-                <SheetContent
-                  showCloseButton={false}
-                  side="right"
-                  className="w-full sm:w-96 p-0 border-l-0"
-                >
-                  <div className="flex items-center justify-between p-6">
-                    <div>
-                      <Link href="/" className="flex items-center gap-3">
-                        {/* Purple Icon */}
-                        <Zap size={38} className="text-purple-700" />
-
-                        {/* Deep Blue Text */}
-                        <span className="text-2xl font-bold text-blue-950">
-                          SkillSpill
-                        </span>
-                      </Link>
-                    </div>
-                    <SheetClose id="mobile-menu-close">
-                      <span className="rounded-full border border-border p-2.5 block">
-                        <Icon icon="lucide:x" width={16} height={16} />
+              <SheetContent
+                showCloseButton={false}
+                side="right"
+                className="w-full sm:w-96 p-0 border-l-0"
+              >
+                <div className="flex items-center justify-between p-6">
+                  <div>
+                    <Link href="/" className="flex items-center gap-3">
+                      <Zap size={38} className="text-purple-700" />
+                      <span className="text-2xl font-bold text-blue-950">
+                        SkillSpill
                       </span>
-                    </SheetClose>
+                    </Link>
                   </div>
+                  <SheetClose id="mobile-menu-close">
+                    <span className="rounded-full border border-border p-2.5 block">
+                      <Icon icon="lucide:x" width={16} height={16} />
+                    </span>
+                  </SheetClose>
+                </div>
 
-                  <div className="flex flex-col gap-12 px-6 pb-6 overflow-y-auto">
-                    <div className="flex flex-col gap-8">
-                      <SheetTitle className="sr-only">Menu</SheetTitle>
-                      <NavigationMenu
-                        orientation="vertical"
-                        className="items-start flex-none"
-                      >
-                        <NavigationMenuList className="flex flex-col items-start gap-3">
-                          {navigationData.map((item) => (
-                            <NavigationMenuItem key={item.title}>
-                              <NavigationMenuLink
-                                href={item.href}
+                <div className="flex flex-col gap-12 px-6 pb-6 overflow-y-auto">
+                  <div className="flex flex-col gap-8">
+                    <SheetTitle className="sr-only">Menu</SheetTitle>
+                    <NavigationMenu
+                      orientation="vertical"
+                      className="items-start flex-none"
+                    >
+                      <NavigationMenuList className="flex flex-col items-start gap-3">
+                        {navigationData.map((item) => (
+                          <NavigationMenuItem key={item.title}>
+                            <NavigationMenuLink
+                              href={item.href}
+                              className={cn(
+                                "group/nav flex items-center text-2xl font-semibold tracking-tight transition-all p-0 hover:bg-transparent focus:bg-transparent data-[active]:bg-transparent data-[state=open]:bg-transparent",
+                                item.isActive
+                                  ? "text-primary"
+                                  : "text-muted-foreground hover:text-foreground hover:translate-x-2",
+                              )}
+                            >
+                              <div
                                 className={cn(
-                                  "group/nav flex items-center text-2xl font-semibold tracking-tight transition-all p-0 hover:bg-transparent focus:bg-transparent data-[active]:bg-transparent data-[state=open]:bg-transparent",
+                                  "h-0.5 bg-primary transition-all duration-300 overflow-hidden",
                                   item.isActive
-                                    ? "text-primary"
-                                    : "text-muted-foreground hover:text-foreground hover:translate-x-2",
+                                    ? "w-4 mr-2 opacity-100"
+                                    : "w-0 opacity-0 group-hover/nav:w-4 group-hover/nav:mr-2 group-hover/nav:opacity-100",
                                 )}
-                              >
-                                <div
-                                  className={cn(
-                                    "h-0.5 bg-primary transition-all duration-300 overflow-hidden",
-                                    item.isActive
-                                      ? "w-4 mr-2 opacity-100"
-                                      : "w-0 opacity-0 group-hover/nav:w-4 group-hover/nav:mr-2 group-hover/nav:opacity-100",
-                                  )}
-                                />
-                                {item.title}
-                              </NavigationMenuLink>
-                            </NavigationMenuItem>
-                          ))}
-                        </NavigationMenuList>
-                      </NavigationMenu>
-
-                      <div className="w-fit space-x-2">
-                        <AuthButtons />
-                      </div>
-                    </div>
-
-                    <div className="mt-auto flex flex-col gap-4">
-                      <div className="flex gap-3">
-                        {[
-                          "lucide:dribbble",
-                          "lucide:instagram",
-                          "lucide:twitter",
-                          "lucide:linkedin",
-                        ].map((icon) => (
-                          <a
-                            key={icon}
-                            href="#"
-                            className="flex items-center justify-center rounded-full outline outline-border hover:bg-muted transition p-3 shadow-xs"
-                          >
-                            <Icon icon={icon} width={16} height={16} />
-                          </a>
+                              />
+                              {item.title}
+                            </NavigationMenuLink>
+                          </NavigationMenuItem>
                         ))}
-                      </div>
+                      </NavigationMenuList>
+                    </NavigationMenu>
 
-                      <p className="text-sm text-muted-foreground">
-                        © 2026 SkillSpill
-                      </p>
+                    <div className="w-fit space-x-2">
+                      <AuthButtons />
                     </div>
                   </div>
-                </SheetContent>
-              </Sheet>
-            ) : (
-              <span className="rounded-full border border-border p-2 block opacity-0">
-                <Icon
-                  icon="solar:hamburger-menu-linear"
-                  width={20}
-                  height={20}
-                />
-              </span>
-            )}
+
+                  <div className="mt-auto flex flex-col gap-4">
+                    <div className="flex gap-3">
+                      {[
+                        "lucide:dribbble",
+                        "lucide:instagram",
+                        "lucide:twitter",
+                        "lucide:linkedin",
+                      ].map((icon) => (
+                        <a
+                          key={icon}
+                          href="#"
+                          className="flex items-center justify-center rounded-full outline outline-border hover:bg-muted transition p-3 shadow-xs"
+                        >
+                          <Icon icon={icon} width={16} height={16} />
+                        </a>
+                      ))}
+                    </div>
+
+                    <p className="text-sm text-muted-foreground">
+                      © 2026 SkillSpill
+                    </p>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </div>
     </motion.header>
   );
-};
-
-export default Header;
+}

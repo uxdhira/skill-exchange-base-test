@@ -44,5 +44,5 @@ export default async function SkillDetailsPage({ params }: PageProps) {
     return <p className="p-6">Skill not found</p>;
   }
 
-  return <SkillDetailsView skill={skill} backUrl="/dashboard/browse-skill" />;
+  return <SkillDetailsView skill={skill} backUrl="/browse" showSidebar={false} />;
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -10,9 +10,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { mockSkills } from "@/data/mockData";
-import { MapPin, Search, Star } from "lucide-react";
-import Link from "next/link";
+import SkillCard from "@/components/ui/skill-card";
+import { CATEGORIES, mockSkills } from "@/data/mockData";
+import { MapPin, Search } from "lucide-react";
 import { useState } from "react";
 
 export default function BrowseSkills() {
@@ -20,10 +20,6 @@ export default function BrowseSkills() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [locationFilter, setLocationFilter] = useState("");
   const [selectedRating, setSelectedRating] = useState<string>("all");
-
-  const categories = Array.from(
-    new Set(mockSkills.map((skill) => skill.category)),
-  );
 
   const filteredSkills = mockSkills.filter((skill) => {
     const matchesSearch =
@@ -41,16 +37,22 @@ export default function BrowseSkills() {
     return matchesSearch && matchesCategory && matchesLocation && matchesRating;
   });
 
+  const clearFilters = () => {
+    setSearchQuery("");
+    setSelectedCategory("all");
+    setLocationFilter("");
+    setSelectedRating("all");
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 py-8">
       <div>
         <h1 className="text-3xl font-bold mb-2">Browse Skills</h1>
-        <p className="text-gray-600">
+        <p className="text-lg text-muted-foreground text-slate-700 font-semibold">
           Discover skills offered by community members
         </p>
       </div>
 
-      {/* Filters */}
       <Card>
         <CardContent className="pt-6">
           <div className="grid md:grid-cols-4 gap-4">
@@ -78,7 +80,7 @@ export default function BrowseSkills() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
-                  {categories.map((category) => (
+                  {CATEGORIES.map((category) => (
                     <SelectItem key={category} value={category}>
                       {category}
                     </SelectItem>
@@ -118,60 +120,21 @@ export default function BrowseSkills() {
         </CardContent>
       </Card>
 
-      {/* Results */}
       <div className="flex items-center justify-between">
         <p className="text-gray-600">{filteredSkills.length} skills found</p>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            setSearchQuery("");
-            setSelectedCategory("all");
-            setLocationFilter("");
-            setSelectedRating("all");
-          }}
-        >
+        <Button variant="outline" size="sm" onClick={clearFilters}>
           Clear Filters
         </Button>
       </div>
 
-      {/* Skill Cards Grid */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredSkills.map((skill) => (
-          <Card key={skill.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="flex items-start justify-between mb-2">
-                <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">
-                  {skill.category}
-                </span>
-                <span className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded-full">
-                  {skill.skillLevel}
-                </span>
-              </div>
-              <CardTitle className="text-xl">{skill.title}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-gray-600 line-clamp-3">
-                {skill.description}
-              </p>
-
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center gap-2 text-gray-600">
-                  <MapPin className="w-4 h-4" />
-                  {skill.location}
-                </div>
-                <div className="flex items-center gap-2">
-                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  <span className="font-medium">{skill.userRating}</span>
-                  <span className="text-gray-500">• {skill.userName}</span>
-                </div>
-              </div>
-
-              <Link href={`/dashboard/skill/${skill.id}`}>
-                <Button className="w-full">View Details</Button>
-              </Link>
-            </CardContent>
-          </Card>
+          <div
+            key={skill.id}
+            className="bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-lg transition-all hover:-translate-y-1"
+          >
+            <SkillCard skill={skill} directUrl={`/skill/${skill.id}`} />
+          </div>
         ))}
       </div>
 
@@ -183,15 +146,7 @@ export default function BrowseSkills() {
             <p className="text-gray-600 mb-4">
               Try adjusting your filters or search query
             </p>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setSearchQuery("");
-                setSelectedCategory("all");
-                setLocationFilter("");
-                setSelectedRating("all");
-              }}
-            >
+            <Button variant="outline" onClick={clearFilters}>
               Clear All Filters
             </Button>
           </CardContent>

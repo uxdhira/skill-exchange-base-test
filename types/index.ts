@@ -28,7 +28,9 @@ export interface Skill {
   userRating: number;
   image?: string;
   availability?: string;
-  status: "pending" | "accepted" | "rejected";
+  mode: "online" | "in_person" | "hybrid";
+  duration: string;
+  status: "pending" | "accepted" | "rejected" | "completed";
   createdAt: string;
 }
 
@@ -44,8 +46,11 @@ export interface Booking {
   providerId: string;
   providerName: string;
   message: string;
-  status: "pending" | "accepted" | "rejected" | "completed";
+  status: "pending" | "accepted" | "rejected" | "complete";
   createdAt: string;
+  date?: string;
+  time?: string;
+  location?: string;
 }
 
 // This describes a review left after a skill session.
@@ -57,5 +62,21 @@ export interface Review {
   reviewerName: string;
   rating: number;
   comment: string;
+  createdAt: string;
+}
+
+// This describes a skill request from a user.
+export interface RequestedSkill {
+  id: string;
+  title: string;
+  category: string;
+  description: string;
+  preferredSchedule: string;
+  location: string;
+  priority: "High" | "Medium" | "Low";
+  status: "active" | "matched" | "closed";
+  matchCount: number;
+  userId: string;
+  userName: string;
   createdAt: string;
 }

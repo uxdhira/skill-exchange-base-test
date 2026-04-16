@@ -3,7 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -17,58 +17,32 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar, CheckCircle, Clock, Flag, Star, XCircle } from "lucide-react";
+import { mockBookings } from "@/data/mockData";
+import {
+  Calendar,
+  CheckCircle,
+  Clock,
+  Flag,
+  Star,
+  XCircle,
+} from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 
-const bookings = [
-  {
-    id: 1,
-    skillTitle: "Web Development",
-    offeredSkill: "Graphic Design",
-    requesterName: "Ali",
-    providerName: "You",
-    requesterId: 2,
-    providerId: 1,
-    status: "pending",
-    message: "Can we exchange skills next week?",
-    createdAt: "Jan 15, 2026",
-  },
-  {
-    id: 2,
-    skillTitle: "UI Design",
-    offeredSkill: "React Basics",
-    requesterName: "You",
-    providerName: "Sara",
-    requesterId: 1,
-    providerId: 3,
-    status: "accepted",
-    message: "Looking forward to working together.",
-    createdAt: "Jan 10, 2026",
-  },
-  {
-    id: 3,
-    skillTitle: "React Basics",
-    offeredSkill: "UI Design",
-    requesterName: "You",
-    providerName: "Sara",
-    requesterId: 1,
-    providerId: 3,
-    status: "completed",
-    message: "Session completed successfully.",
-    createdAt: "Jan 5, 2026",
-  },
-];
+const currentUserId = "user-1";
 
-const currentUserId = 1;
+const bookings = mockBookings.map((b) => ({
+  ...b,
+  id: parseInt(b.id.replace("booking-", "")),
+}));
 
 const getIcon = (status: string) => {
   if (status === "accepted")
     return <CheckCircle className="w-5 h-5 text-green-600" />;
   if (status === "rejected")
     return <XCircle className="w-5 h-5 text-red-600" />;
-  if (status === "completed")
+  if (status === "complete")
     return <CheckCircle className="w-5 h-5 text-blue-600" />;
   return <Clock className="w-5 h-5 text-yellow-600" />;
 };
@@ -76,8 +50,9 @@ const getIcon = (status: string) => {
 const getBadge = (status: string) => {
   if (status === "accepted") return "bg-green-100 text-green-700";
   if (status === "rejected") return "bg-red-100 text-red-700";
-  if (status === "completed") return "bg-blue-100 text-blue-700";
-  return "bg-yellow-100 text-yellow-700";
+  if (status === "complete") return "bg-blue-100 text-blue-700";
+  if (status === "pending") return "bg-yellow-100 text-yellow-700";
+  return "bg-gray-100 text-gray-700";
 };
 
 function BookingCard({
@@ -118,8 +93,10 @@ function BookingCard({
   const handleReportSubmit = () => {
     const reportData = {
       bookingId: booking.id,
-      reportedUser: type === "sent" ? booking.providerName : booking.requesterName,
-      reporterUser: type === "sent" ? booking.requesterName : booking.providerName,
+      reportedUser:
+        type === "sent" ? booking.providerName : booking.requesterName,
+      reporterUser:
+        type === "sent" ? booking.requesterName : booking.providerName,
       reason: reportReason,
       details: reportDetails,
     };
@@ -142,7 +119,7 @@ function BookingCard({
         <div>
           <div className="flex items-center gap-2 mb-1">
             {getIcon(booking.status)}
-            <Link 
+            <Link
               href={`/dashboard/bookings-details?id=${booking.id}`}
               className="text-lg hover:text-blue-600 hover:underline"
             >
@@ -163,7 +140,7 @@ function BookingCard({
           <span className="font-medium">
             {type === "sent" ? "You offered:" : "They offered:"}
           </span>{" "}
-          {booking.offeredSkill}
+          {booking.offeredSkillTitle}
         </p>
         <p className="text-sm text-gray-600">{booking.message}</p>
         <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -198,10 +175,10 @@ function BookingCard({
           </Button>
         )}
 
-        {booking.status === "completed" && (
+        {booking.status === "complete" && type === "sent" && (
           <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
             <DialogTrigger asChild>
-              <Button className="w-full" variant="outline">
+              <Button className="w-full border-purple-600 border-1 bg-slate-300 text-slate-900 hover:text-purple-700 hover:bg-purple-100 hover:border-slate-600 hover:border-1">
                 <Star className="w-4 h-4 mr-2" />
                 Write a Review
               </Button>
@@ -284,18 +261,18 @@ function BookingCard({
           </Dialog>
         )}
 
-        {booking.status === "completed" && (
+        {booking.status === "complete" && (
           <Dialog open={isReportOpen} onOpenChange={setIsReportOpen}>
             <DialogTrigger asChild>
-              <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => setIsReportOpen(true)}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                >
-                  <Flag className="mr-2 h-4 w-4" />
-                  Report
-                </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsReportOpen(true)}
+                className="text-red-600 hover:text-red-700 hover:bg-red-100 w-full border-1 border-red-400"
+              >
+                <Flag className="mr-2 h-4 w-4  " />
+                Report
+              </Button>
             </DialogTrigger>
             <DialogContent className="max-w-md">
               <DialogHeader>
@@ -314,7 +291,9 @@ function BookingCard({
                     onChange={(e) => setReportReason(e.target.value)}
                   >
                     <option value="">Select a reason</option>
-                    <option value="harassment">Harassment or inappropriate behavior</option>
+                    <option value="harassment">
+                      Harassment or inappropriate behavior
+                    </option>
                     <option value="no-show">No-show or unreliability</option>
                     <option value="inappropriate">Inappropriate content</option>
                     <option value="scam">Suspicious activity or scam</option>

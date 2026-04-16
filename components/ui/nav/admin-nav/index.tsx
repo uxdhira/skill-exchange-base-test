@@ -29,6 +29,7 @@ const AdminNavBox = ({ sheetClose = false }: { sheetClose: boolean }) => {
       icon: Lightbulb,
     },
     { name: "Bookings", href: "/dashboard/bookings", icon: Calendar },
+    { name: "My Bookings", href: "/dashboard/mybookings", icon: Calendar },
     { name: "Reviews", href: "/dashboard/reviews", icon: MessageSquare },
     { name: "Settings", href: "/dashboard/settings", icon: Settings },
   ];
