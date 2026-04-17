@@ -131,9 +131,38 @@ export default function MyBookingsPage() {
                       {booking.status}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600">
-                    {isProvider ? "Teaching" : "Learning"}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    {!isProvider && (
+                      <span className="px-2 py-1 bg-pink-100 text-pink-700 text-sm font-medium rounded">
+                        Student
+                      </span>
+                    )}
+                    {isProvider && (
+                      <span className="px-2 py-1 bg-teal-100 text-teal-700 text-sm font-medium rounded">
+                        Teacher
+                      </span>
+                    )}
+                  </div>
+                  {!isProvider && (
+                    <p className="text-sm text-gray-700 mt-1">
+                      Learning in exchange of{" "}
+                      <span className="font-semibold text-purple-700">
+                        {booking.offeredSkillTitle}
+                      </span>
+                    </p>
+                  )}
+                  {isProvider && (
+                    <p className="text-sm text-gray-700 mt-1">
+                      Teaching{" "}
+                      <span className="font-semibold text-purple-700">
+                        {booking.skillTitle}
+                      </span>{" "}
+                      in exchange of{" "}
+                      <span className="font-semibold text-purple-700">
+                        {booking.offeredSkillTitle}
+                      </span>
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -146,8 +175,8 @@ export default function MyBookingsPage() {
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="text-sm text-gray-600">
-                      {isProvider ? "Student" : "Teacher"}
+                    <p className="text-sm font-semibold text-gray-600">
+                      {isProvider ? "My Student" : "My Teacher"}
                     </p>
                     <p className="font-medium">{otherPerson.name}</p>
                   </div>

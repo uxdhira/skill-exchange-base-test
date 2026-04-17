@@ -29,12 +29,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Clock, Edit, MapPin, Monitor, Plus, Trash2, Users } from "lucide-react";
+import { mockRequestedSkills, mockSkills } from "@/data/mockData";
+import { RequestedSkill } from "@/types";
+import {
+  Clock,
+  Edit,
+  MapPin,
+  Monitor,
+  Plus,
+  Trash2,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
-import { mockRequestedSkills, mockSkills } from "@/data/mockData";
-import { RequestedSkill } from "@/types";
 
 const categories = [
   "Technical",
@@ -44,6 +52,8 @@ const categories = [
   "Fitness",
   "Cooking",
   "Business",
+  "Personal",
+  "Digital",
   "Other",
 ];
 
@@ -53,15 +63,20 @@ export default function RequestedSkills() {
   const [editingSkill, setEditingSkill] = useState<RequestedSkill | null>(null);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
-  const [selectedSkillForMatches, setSelectedSkillForMatches] = useState<RequestedSkill | null>(null);
+  const [selectedSkillForMatches, setSelectedSkillForMatches] =
+    useState<RequestedSkill | null>(null);
   const [matchesDialogOpen, setMatchesDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     category: "",
     description: "",
     preferredSchedule: "",
+    preferredDate: "",
+    preferredTime: "",
     location: "",
     priority: "Medium" as "High" | "Medium" | "Low",
+    duration: "",
+    mode: "online" as "online" | "in_person" | "hybrid",
   });
 
   const currentUserId = "user-1";
@@ -88,8 +103,10 @@ export default function RequestedSkills() {
       const newSkill: RequestedSkill = {
         id: generateId(),
         ...formData,
+        preferredDate: selectedDate,
+        preferredTime: selectedTime,
         status: "active",
-        matchCount: 0,
+        matchCount: mockSkills.filter((s) => s.category === formData.category).length,
         userId: currentUserId,
         userName: "Hira Khan",
         createdAt: new Date().toISOString().split("T")[0],
@@ -108,9 +125,15 @@ export default function RequestedSkills() {
       category: skill.category,
       description: skill.description,
       preferredSchedule: skill.preferredSchedule,
+      preferredDate: skill.preferredDate || "",
+      preferredTime: skill.preferredTime || "",
       location: skill.location,
       priority: skill.priority,
+      duration: skill.duration || "",
+      mode: skill.mode || "online",
     });
+    setSelectedDate(skill.preferredDate || "");
+    setSelectedTime(skill.preferredTime || "");
     setIsDialogOpen(true);
   };
 
@@ -122,13 +145,19 @@ export default function RequestedSkills() {
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setEditingSkill(null);
+    setSelectedDate("");
+    setSelectedTime("");
     setFormData({
       title: "",
       category: "",
       description: "",
       preferredSchedule: "",
+      preferredDate: "",
+      preferredTime: "",
       location: "",
       priority: "Medium",
+      duration: "",
+      mode: "online",
     });
   };
 
@@ -180,7 +209,7 @@ export default function RequestedSkills() {
               Request New Skill
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingSkill ? "Edit Skill Request" : "Request a New Skill"}
@@ -296,11 +325,48 @@ export default function RequestedSkills() {
                 </div>
 
                 <div className="space-y-2">
+                  <Label htmlFor="duration">Duration</Label>
+                  <Input
+                    id="duration"
+                    placeholder="e.g., 1 hour, 2 hours"
+                    value={formData.duration}
+                    onChange={(e) =>
+                      setFormData({ ...formData, duration: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Session Type (Mode)</Label>
+                  <Select
+                    value={formData.mode}
+                    onValueChange={(value) =>
+                      setFormData({
+                        ...formData,
+                        mode: value as "online" | "in_person" | "hybrid",
+                      })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="online">Online</SelectItem>
+                      <SelectItem value="in_person">In Person</SelectItem>
+                      <SelectItem value="hybrid">Hybrid</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
                   <Label>Priority</Label>
                   <Select
                     value={formData.priority}
                     onValueChange={(value) =>
-                      setFormData({ ...formData, priority: value as "High" | "Medium" | "Low" })
+                      setFormData({
+                        ...formData,
+                        priority: value as "High" | "Medium" | "Low",
+                      })
                     }
                   >
                     <SelectTrigger>
@@ -359,7 +425,7 @@ export default function RequestedSkills() {
                   </div>
                   <div className="flex gap-2">
                     <Badge className={getStatusColor(skill.status)}>
-                      {skill.status}
+                      {skill.status.charAt(0).toUpperCase() + skill.status.slice(1)}
                     </Badge>
                   </div>
                 </div>
@@ -376,9 +442,35 @@ export default function RequestedSkills() {
                     {skill.preferredSchedule}
                   </div>
                   <div>
+                    <span className="font-medium">Preferred Date:</span>{" "}
+                    {skill.preferredDate
+                      ? new Date(skill.preferredDate).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })
+                      : "Not specified"}
+                  </div>
+                  <div>
+                    <span className="font-medium">Preferred Time:</span>{" "}
+                    {skill.preferredTime || "Not specified"}
+                  </div>
+                  <div>
                     <span className="font-medium">Location:</span>{" "}
                     {skill.location}
                   </div>
+                  {skill.duration && (
+                    <div>
+                      <span className="font-medium">Duration:</span>{" "}
+                      {skill.duration}
+                    </div>
+                  )}
+                  {skill.mode && (
+                    <div>
+                      <span className="font-medium">Session Type:</span>{" "}
+                      <span className="capitalize">{skill.mode.replace("_", " ")}</span>
+                    </div>
+                  )}
                   <div className="flex items-center gap-2">
                     <span className="font-medium">Priority:</span>
                     <Badge
@@ -388,10 +480,13 @@ export default function RequestedSkills() {
                       {skill.priority}
                     </Badge>
                   </div>
-                  {skill.matchCount > 0 && (
+                  {mockSkills.filter((s) => s.category === skill.category).length > 0 && (
                     <div className="flex items-center gap-1 text-green-600">
                       <Users className="h-4 w-4" />
-                      <span>{skill.matchCount} potential matches</span>
+                      <span>
+                        {mockSkills.filter((s) => s.category === skill.category).length}{" "}
+                        potential matches
+                      </span>
                     </div>
                   )}
                 </div>
@@ -415,7 +510,11 @@ export default function RequestedSkills() {
                   <Trash2 className="h-4 w-4" />
                 </Button>
                 {skill.matchCount > 0 && (
-                  <Button size="sm" className="flex-1" onClick={() => handleViewMatches(skill)}>
+                  <Button
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => handleViewMatches(skill)}
+                  >
                     View Matches
                   </Button>
                 )}
@@ -430,7 +529,8 @@ export default function RequestedSkills() {
           <DialogHeader>
             <DialogTitle>Matched Skills</DialogTitle>
             <DialogDescription>
-              Skills that match your request for "{selectedSkillForMatches?.title}"
+              Skills that match your request for &quot;
+              {selectedSkillForMatches?.title}&quot;
             </DialogDescription>
           </DialogHeader>
 
@@ -438,8 +538,9 @@ export default function RequestedSkills() {
             {selectedSkillForMatches && (
               <div className="grid gap-4">
                 {mockSkills
-                  .filter((s) => s.category === selectedSkillForMatches.category)
-                  .slice(0, 3)
+                  .filter(
+                    (s) => s.category === selectedSkillForMatches.category,
+                  )
                   .map((skill) => (
                     <Link
                       key={skill.id}
@@ -447,8 +548,12 @@ export default function RequestedSkills() {
                       className="block p-4 border rounded-lg hover:bg-gray-50 transition-colors"
                     >
                       <div className="flex gap-2 mb-2">
-                        <Badge className="bg-blue-100 text-blue-700">{skill.category}</Badge>
-                        <Badge className="bg-purple-100 text-purple-700">{skill.skillLevel}</Badge>
+                        <Badge className="bg-blue-100 text-blue-700">
+                          {skill.category}
+                        </Badge>
+                        <Badge className="bg-purple-100 text-purple-700">
+                          {skill.skillLevel}
+                        </Badge>
                       </div>
                       <h3 className="font-semibold mb-1">{skill.title}</h3>
                       <p className="text-sm text-gray-600 line-clamp-2 mb-2">
@@ -457,7 +562,9 @@ export default function RequestedSkills() {
                       <div className="flex items-center gap-3 text-sm text-gray-600">
                         <span className="flex items-center gap-1">
                           <Monitor className="w-3 h-3" />
-                          <span className="capitalize">{skill.mode.replace("_", " ")}</span>
+                          <span className="capitalize">
+                            {skill.mode.replace("_", " ")}
+                          </span>
                         </span>
                         <span>·</span>
                         <span className="flex items-center gap-1">
@@ -477,7 +584,10 @@ export default function RequestedSkills() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setMatchesDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setMatchesDialogOpen(false)}
+            >
               Close
             </Button>
           </DialogFooter>

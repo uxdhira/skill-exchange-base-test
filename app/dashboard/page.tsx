@@ -160,7 +160,7 @@ export default function DashboardHomePage() {
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>My Skills</CardTitle>
           <Link href="/dashboard/submit-skill">
-            <Button variant="outline" size="sm">
+            <Button variant="default" size="sm">
               Add New Skill
             </Button>
           </Link>
@@ -176,7 +176,12 @@ export default function DashboardHomePage() {
                   <h4 className="font-medium">{skill.title}</h4>
                   <p className="text-sm text-gray-600">{skill.category}</p>
                 </div>
-                <Button asChild variant="ghost" size="sm">
+                <Button
+                  asChild
+                  variant="ghost"
+                  size="sm"
+                  className="border border-1 border-slate-400"
+                >
                   <Link href={`/dashboard/skill-details/${skill.id}`}>
                     View
                   </Link>

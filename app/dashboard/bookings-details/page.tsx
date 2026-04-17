@@ -220,7 +220,7 @@ export default function BookingDetail() {
                     <Card className="bg-green-50 border-green-200">
                       <CardHeader>
                         <CardDescription className="text-green-900">
-                          {isProvider ? "You will teach" : "In exchange for"}
+                          {isProvider ? "You will learn" : "In exchange for"}
                         </CardDescription>
                         <CardTitle className="text-green-900">
                           {booking.offeredSkillTitle}

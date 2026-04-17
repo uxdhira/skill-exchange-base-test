@@ -72,6 +72,8 @@ export interface RequestedSkill {
   category: string;
   description: string;
   preferredSchedule: string;
+  preferredDate?: string;
+  preferredTime?: string;
   location: string;
   priority: "High" | "Medium" | "Low";
   status: "active" | "matched" | "closed";
@@ -79,4 +81,6 @@ export interface RequestedSkill {
   userId: string;
   userName: string;
   createdAt: string;
+  duration?: string;
+  mode?: "online" | "in_person" | "hybrid";
 }

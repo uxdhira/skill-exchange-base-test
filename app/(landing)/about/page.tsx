@@ -136,7 +136,7 @@ export default function About() {
                 communities. Whether you are a professional photographer
                 teaching composition in exchange for learning web development,
                 or a chef sharing cooking techniques in exchange for language
-                lessons, SkillSwap makes it possible.
+                lessons, SkillSpill makes it possible.
               </p>
               <p>
                 Today, our community includes thousands of learners and teachers

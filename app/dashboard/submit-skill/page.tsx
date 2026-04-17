@@ -63,6 +63,8 @@ export default function SubmitSkillPage() {
     skillLevel: skillToEdit?.skillLevel || "Beginner",
     location: skillToEdit?.location || "",
     availability: skillToEdit?.availability || "",
+    duration: skillToEdit?.duration || "",
+    mode: skillToEdit?.mode || "online",
   }));
 
   // Create or update a skill when the form is submitted.
@@ -77,6 +79,8 @@ export default function SubmitSkillPage() {
       skillLevel: formData.skillLevel,
       location: formData.location,
       availability: formData.availability,
+      duration: formData.duration,
+      mode: formData.mode,
       userId: "user-1", // Assuming current user ID is "user-1"
       status: "accepted",
       userName: `${user?.name}`,
@@ -236,6 +240,35 @@ export default function SubmitSkillPage() {
                 value={formData.availability}
                 onChange={(e) => handleChange("availability", e.target.value)}
               />
+            </div>
+
+            {/* Duration */}
+            <div className="space-y-2">
+              <Label htmlFor="duration">Duration</Label>
+              <Input
+                id="duration"
+                placeholder="e.g., 1 hour, 2 hours"
+                value={formData.duration}
+                onChange={(e) => handleChange("duration", e.target.value)}
+              />
+            </div>
+
+            {/* Mode */}
+            <div className="space-y-2">
+              <Label>Session Type (Mode)</Label>
+              <Select
+                value={formData.mode}
+                onValueChange={(value) => handleChange("mode", value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select session type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="online">Online</SelectItem>
+                  <SelectItem value="in_person">In Person</SelectItem>
+                  <SelectItem value="hybrid">Hybrid</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Upload Images/Samples */}

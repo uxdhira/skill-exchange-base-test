@@ -17,7 +17,7 @@ const steps = [
     id: 2,
     title: "Find Skills",
     description:
-      "Browse through available skills in your area. Filter by category, location, and skill level.",
+      "Browse through available skills in your area. Filter by category, location, and ratings.",
     icon: <Search className="h-6 w-6 text-green-700" />,
     iconBg: "bg-green-200",
     cardBg: "bg-green-50",
