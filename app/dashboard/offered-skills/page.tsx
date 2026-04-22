@@ -2,8 +2,8 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import SkillCard from "@/components/ui/skill-card";
-import { currentUser } from "@/data/mockData";
-import { useGlobalState } from "@/hooks/useGlobalState";
+import { useCurrentUser } from "@/hooks/auth";
+import { useOwnerSkills } from "@/hooks/skill";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 
@@ -11,12 +11,16 @@ import Link from "next/link";
  * This page shows only the skills created by the current user.
  */
 export default function MySkills() {
-  const { mockSkillData } = useGlobalState();
-
-  // Filter the shared skill list to this user's own skills.
-  const mySkills = mockSkillData.filter(
-    (skill) => skill.userId === currentUser.id,
-  );
+  const {
+    data: user,
+    isLoading: userLoading,
+    error: userError,
+  } = useCurrentUser();
+  const {
+    data: skillsData,
+    isLoading: skillsLoading,
+    error: skillsError,
+  } = useOwnerSkills(user?.profile?.documentId || "");
 
   return (
     <div className="space-y-6">
@@ -35,7 +39,7 @@ export default function MySkills() {
         </Link>
       </div>
 
-      {mySkills.length === 0 ? (
+      {skillsData?.data.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -52,12 +56,12 @@ export default function MySkills() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {mySkills.map((skill) => (
+          {skillsData?.data.map((skill) => (
             <SkillCard
               key={skill.id}
               skill={skill}
               isEditEnabled={true}
-              directUrl={`/dashboard/skill-details/${skill.id}`}
+              directUrl={`/dashboard/skill-details/${skill.documentId}`}
             />
           ))}
         </div>

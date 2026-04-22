@@ -10,8 +10,8 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { currentUser } from "@/data/mockData";
-import { useGlobalState } from "@/hooks/useGlobalState";
+import { useRegister } from "@/hooks/auth";
+import { useGlobalState } from "@/hooks/GlobalState";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -29,8 +29,14 @@ export default function RegisterPage() {
   // We use it to move the user to another page after registration.
   const router = useRouter();
   const { user, loginUser } = useGlobalState();
+  const registerMutation = useRegister();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
 
   // If a user is already logged in, send them away from the register page.
   // `useEffect` is used for this redirect side effect.
@@ -43,16 +49,37 @@ export default function RegisterPage() {
   // This is an example of event handling in React.
   // We use `onSubmit` so the form logic runs in JavaScript.
   // Handle account creation using the demo user data.
-  const handleSignUp = (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    const userData = currentUser;
-    loginUser(userData);
 
-    const toastMessage = "Your account has been created successfully!";
+    try {
+      const result = await registerMutation.mutateAsync({
+        username,
+        firstName,
+        lastName,
+        email,
+        password,
+      });
 
-    toast(toastMessage, { position: "top-center" });
-    // Move the user to the dashboard after registration.
-    router.push("/dashboard");
+      const newUser = {
+        id: result.user.id.toString(),
+        name: result.user.username,
+        email: result.user.email,
+        profile: result.user.profile,
+      };
+
+      loginUser(newUser);
+
+      toast("Your account has been created successfully!", {
+        position: "top-center",
+      });
+      router.push("/dashboard");
+    } catch (error) {
+      console.error("Registration failed:", error);
+      toast("Registration failed. Please try again.", {
+        position: "top-center",
+      });
+    }
   };
 
   return (
@@ -69,13 +96,40 @@ export default function RegisterPage() {
 
         <CardContent>
           <form onSubmit={handleSignUp} className="space-y-4">
-            {/* Full Name */}
+            {/* FIRST Name */}
             <div className="space-y-2">
-              <Label htmlFor="fullname">Full Name</Label>
+              <Label htmlFor="firstName">First Name</Label>
               <Input
-                id="fullname"
-                defaultValue={"Hira Khan"}
-                placeholder="John Doe"
+                id="firstName"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="John"
+                className="bg-slate-50/50 border-slate-200"
+                required
+              />
+            </div>
+
+            {/* LAST Name */}
+            <div className="space-y-2">
+              <Label htmlFor="lastName">Last Name</Label>
+              <Input
+                id="lastName"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="Doe"
+                className="bg-slate-50/50 border-slate-200"
+                required
+              />
+            </div>
+
+            {/* Username */}
+            <div className="space-y-2">
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="johndoe"
                 className="bg-slate-50/50 border-slate-200"
                 required
               />
@@ -87,7 +141,8 @@ export default function RegisterPage() {
               <Input
                 id="email"
                 type="email"
-                defaultValue={"uxdhira@gmail.com"}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="your.email@example.com"
                 className="bg-slate-50/50 border-slate-200"
                 required
@@ -101,7 +156,8 @@ export default function RegisterPage() {
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  defaultValue={"uxdk1234"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="........"
                   className="bg-slate-50/50 border-slate-200"
                   required
@@ -123,7 +179,6 @@ export default function RegisterPage() {
                 <Input
                   id="confirm-password"
                   type={showConfirmPassword ? "text" : "password"}
-                  defaultValue={"uxdk1234"}
                   placeholder="........"
                   className="bg-slate-50/50 border-slate-200"
                   required
@@ -142,8 +197,11 @@ export default function RegisterPage() {
             <Button
               type="submit"
               className="w-full bg-[#050510] hover:bg-slate-900 text-white font-semibold py-6 mt-2"
+              disabled={registerMutation.isPending}
             >
-              Create Account
+              {registerMutation.isPending
+                ? "Creating account..."
+                : "Create Account"}
             </Button>
 
             {/* Login Link */}

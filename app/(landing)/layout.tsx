@@ -1,6 +1,7 @@
 import Footer from "@/components/blocks/footer/footer";
 import Header, { NavigationSection } from "@/components/ui/nav/header";
-import { MockStateProvider } from "@/hooks/useGlobalState";
+import { MockStateProvider } from "@/hooks/GlobalState";
+import SkillsProvider from "@/providers/skills-provider";
 
 // This typed array is an example of props-ready data passed into a component.
 // These links are shown in the public landing page header.
@@ -40,12 +41,12 @@ export default function LandingLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
+    <SkillsProvider>
       <MockStateProvider>
         <Header navigationData={navigationData} />
         {children}
       </MockStateProvider>
       <Footer />
-    </>
+    </SkillsProvider>
   );
 }

@@ -20,13 +20,13 @@ export interface Skill {
   id: string;
   title: string;
   description: string;
-  category: string;
+  category: string | { name: string; [key: string]: unknown };
   location: string;
   skillLevel: string;
   userId: string;
   userName: string;
   userRating: number;
-  image?: string;
+  image?: { url: string } | string;
   availability?: string;
   mode: "online" | "in_person" | "hybrid";
   duration: string;

@@ -1,5 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useGlobalState } from "@/hooks/useGlobalState";
+import { useGlobalState } from "@/hooks/GlobalState";
 import { MapPin, Star } from "lucide-react";
 
 /**

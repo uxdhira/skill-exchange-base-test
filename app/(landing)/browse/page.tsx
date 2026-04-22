@@ -11,22 +11,49 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import SkillCard from "@/components/ui/skill-card";
-import { CATEGORIES, mockSkills } from "@/data/mockData";
+import { mockSkills } from "@/data/mockData";
 import { MapPin, Search } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+interface Category {
+  id: number;
+  attributes: {
+    name: string;
+    slug: string;
+  };
+}
 
 export default function BrowseSkills() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [locationFilter, setLocationFilter] = useState("");
   const [selectedRating, setSelectedRating] = useState<string>("all");
+  const [categories, setCategories] = useState<Category["attributes"][]>([]);
+
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const response = await fetch("/api/categories");
+        const data = await response.json();
+        if (data.data) {
+          setCategories(data.data.map((cat: Category) => cat.attributes));
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    }
+    fetchCategories();
+  }, []);
 
   const filteredSkills = mockSkills.filter((skill) => {
     const matchesSearch =
       skill.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       skill.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory =
-      selectedCategory === "all" || skill.category === selectedCategory;
+      selectedCategory === "all" ||
+      (typeof skill.category === "string"
+        ? skill.category === selectedCategory
+        : skill.category?.name === selectedCategory);
     const matchesLocation =
       !locationFilter ||
       skill.location.toLowerCase().includes(locationFilter.toLowerCase());
@@ -80,9 +107,9 @@ export default function BrowseSkills() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
-                  {CATEGORIES.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
+                  {categories.map((category) => (
+                    <SelectItem key={category.slug} value={category.name}>
+                      {category.name}
                     </SelectItem>
                   ))}
                 </SelectContent>

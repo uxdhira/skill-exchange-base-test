@@ -1,7 +1,9 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { currentUser, mockBookings, mockSkills } from "@/data/mockData";
+import { mockBookings } from "@/data/mockData";
+import { useCurrentUser } from "@/hooks/auth";
+import { useOwnerSkills } from "@/hooks/skill";
 import { Award, Calendar, Star, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
@@ -10,22 +12,50 @@ import Link from "next/link";
  * It gives the user a quick summary of skills, bookings, and reviews.
  */
 export default function DashboardHomePage() {
+  const {
+    data: user,
+    isLoading: userLoading,
+    error: userError,
+  } = useCurrentUser();
+  const {
+    data: skillsData,
+    isLoading: skillsLoading,
+    error: skillsError,
+  } = useOwnerSkills(user?.profile?.documentId || "");
+
   // Only show skills posted by the logged-in user.
-  const mySkills = mockSkills.filter(
-    (skill) => skill.userId === currentUser.id,
-  );
+  const mySkills = skillsData?.data || [];
   // Show bookings where the user is either the sender or the receiver.
   const myBookings = mockBookings.filter(
     (booking) =>
-      booking.requesterId === currentUser.id ||
-      booking.providerId === currentUser.id,
+      booking.requesterId === user?.id || booking.providerId === user?.id,
   );
+
+  if (userLoading || skillsLoading) {
+    return (
+      <div className="space-y-6 w-full">
+        <div className="text-center py-12">
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (userError || skillsError) {
+    return (
+      <div className="space-y-6 w-full">
+        <div className="text-center py-12">
+          <p className="text-red-600">Error loading data</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 w-full">
       <div>
         <h1 className="text-3xl font-bold mb-2">
-          Welcome back, {currentUser.name.split(" ")[0]}!
+          Welcome back, {user?.profile?.firstName}
         </h1>
         <p className="text-gray-600">
           {"Here's what's happening with your skill exchanges"}
@@ -55,7 +85,8 @@ export default function DashboardHomePage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {myBookings.filter((b) => b.status !== "rejected").length}
+              {false &&
+                myBookings.filter((b) => b.status !== "rejected").length}
             </div>
           </CardContent>
         </Card>
@@ -68,7 +99,7 @@ export default function DashboardHomePage() {
             <Star className="w-4 h-4 text-yellow-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{currentUser.rating}</div>
+            <div className="text-2xl font-bold">{user?.rating}</div>
           </CardContent>
         </Card>
 
@@ -80,7 +111,7 @@ export default function DashboardHomePage() {
             <TrendingUp className="w-4 h-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{currentUser.reviewCount}</div>
+            <div className="text-2xl font-bold">{user?.reviewCount}</div>
           </CardContent>
         </Card>
       </div>
@@ -112,7 +143,7 @@ export default function DashboardHomePage() {
                   <div className="flex items-start justify-between">
                     <div>
                       <p className="font-medium">
-                        {booking.requesterId === currentUser.id
+                        {booking.requesterId === user?.id
                           ? `Booking request sent for "${booking.skillTitle}"`
                           : `Received booking request for "${booking.skillTitle}"`}
                       </p>
@@ -174,7 +205,7 @@ export default function DashboardHomePage() {
               >
                 <div>
                   <h4 className="font-medium">{skill.title}</h4>
-                  <p className="text-sm text-gray-600">{skill.category}</p>
+                  <p className="text-sm text-gray-600">{skill.category.name}</p>
                 </div>
                 <Button
                   asChild

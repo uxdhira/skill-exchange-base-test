@@ -57,7 +57,12 @@ export const MockStateProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // Clear the user when logging out.
-  const logoutUser = () => {
+  const logoutUser = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
     setUser(null);
     localStorage.removeItem("currentUser");
   };

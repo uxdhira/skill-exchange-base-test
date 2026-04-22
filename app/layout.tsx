@@ -1,7 +1,8 @@
+import Providers from "@/providers";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
 import { Toaster } from "sonner";
+import "./globals.css";
 
 // `next/font/google` is used to load Google fonts in an optimized Next.js way.
 // We use it so fonts load faster and the UI looks more polished.
@@ -42,7 +43,7 @@ export default function RootLayout({
       >
         {/* Toaster shows small popup messages anywhere in the app. */}
         <Toaster />
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -23,9 +23,9 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
-import { CATEGORIES } from "@/data/mockData";
-import { useGlobalState } from "@/hooks/useGlobalState";
-import { Skill } from "@/types";
+import { useCurrentUser } from "@/hooks/auth";
+import { useCategories } from "@/hooks/categories";
+import { useSkill } from "@/hooks/skill";
 import { ArrowLeft, Upload } from "lucide-react";
 import { toast } from "sonner";
 
@@ -41,8 +41,12 @@ import { toast } from "sonner";
 export default function SubmitSkillPage() {
   // `useRouter` is used to go back or redirect after saving.
   const router = useRouter();
-  const { addSkill, editSkill, user, mockSkillData } = useGlobalState();
-
+  // const { addSkill, editSkill, user, mockSkillData } = useGlobalState();
+  const {
+    data: user,
+    isLoading: userLoading,
+    error: userError,
+  } = useCurrentUser();
   // `useSearchParams` reads values from the URL query string.
   // We use it to support edit mode like `?id=...&edit=true`.
   const searchParams = useSearchParams();
@@ -50,55 +54,92 @@ export default function SubmitSkillPage() {
 
   const skillId = searchParams.get("id");
 
-  // Find the existing skill when the page is opened in edit mode.
-  const skillToEdit = mockSkillData.find((s) => s.id === skillId);
+  const { data: skillData, isLoading: skillLoading } = useSkill(skillId || "");
+  console.log({ skillData });
+  useEffect(() => {
+    if (skillData && isEdit) {
+      setFormData({
+        title: skillData.title || "",
+        description: skillData.description || "",
+        category: skillData.category || "",
+        skillLevel: skillData.skillLevel || "Beginner",
+        location: skillData.location || "",
+        mode: skillData.mode || "online",
+      });
+    }
+  }, [skillData, isEdit]);
 
   // `useState` is used for controlled form inputs.
   // We use it so input fields always stay connected to React state.
   // Use old values in edit mode, or blank values for a new skill.
   const [formData, setFormData] = useState(() => ({
-    title: skillToEdit?.title || "",
-    description: skillToEdit?.description || "",
-    category: skillToEdit?.category || "",
-    skillLevel: skillToEdit?.skillLevel || "Beginner",
-    location: skillToEdit?.location || "",
-    availability: skillToEdit?.availability || "",
-    duration: skillToEdit?.duration || "",
-    mode: skillToEdit?.mode || "online",
+    title: "",
+    description: "",
+    category: "",
+    skillLevel: "Beginner",
+    location: "",
+    mode: "online",
   }));
 
+  const { data: categoriesData, isLoading: categoriesLoading } =
+    useCategories();
+  const categories = categoriesData?.data || [];
+  const [isLoading, setIsLoading] = useState(false);
+  console.log({ formData });
   // Create or update a skill when the form is submitted.
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // alert("Skill submitted successfully! (This is a demo)");
-    const newSkill: Skill = {
-      id: isEdit && skillId ? skillId : crypto.randomUUID(),
+    setIsLoading(true);
+
+    const selectedCategory = categories.find(
+      (c) => c.slug === formData.category,
+    );
+
+    const skillData = {
       title: formData.title,
       description: formData.description,
-      category: formData.category,
-      skillLevel: formData.skillLevel,
-      location: formData.location,
-      availability: formData.availability,
-      duration: formData.duration,
-      mode: formData.mode,
-      userId: "user-1", // Assuming current user ID is "user-1"
-      status: "accepted",
-      userName: `${user?.name}`,
-      createdAt: new Date().toISOString(),
-      userRating: 4.8,
-      image: isEdit ? skillToEdit?.image : "", // Keep existing image if editing, else use default
+      category: selectedCategory?.documentId,
+      skillLevel: formData.skillLevel.toLowerCase(),
+      mode: formData.mode.toLowerCase(),
+      currentStatus: "pending",
+      owner: user?.profile?.documentId,
     };
-    if (isEdit) {
-      editSkill(newSkill);
-    } else {
-      addSkill(newSkill);
-    }
-    const toastMessage = isEdit
-      ? "Your skill has been updated successfully!"
-      : "Your skill has been created and accepted from our Team. Happy Learning!";
-    toast(toastMessage, { position: "top-center" });
 
-    router.push("/dashboard/offered-skills");
+    console.log({ skillData, selectedCategory, formData });
+    try {
+      let response;
+      if (isEdit && skillId) {
+        response = await fetch(`/api/skills/${skillId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(skillData),
+        });
+      } else {
+        response = await fetch("/api/skills", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(skillData),
+        });
+      }
+
+      if (!response.ok) {
+        throw new Error("Failed to save skill");
+      }
+
+      const toastMessage = isEdit
+        ? "Your skill has been updated successfully!"
+        : "Your skill has been created and accepted from our Team. Happy Learning!";
+      toast(toastMessage, { position: "top-center" });
+
+      router.push("/dashboard/offered-skills");
+    } catch (error) {
+      console.error("Error saving skill:", error);
+      toast("Failed to save skill. Please try again.", {
+        position: "top-center",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Update one field inside the form state.
@@ -106,7 +147,6 @@ export default function SubmitSkillPage() {
   const handleChange = (field: string, value: string) => {
     setFormData({ ...formData, [field]: value });
   };
-
   return (
     <div className="space-y-6">
       <Button variant="ghost" onClick={() => router.back()}>
@@ -161,17 +201,17 @@ export default function SubmitSkillPage() {
             <div className="space-y-2">
               <Label htmlFor="category">Category *</Label>
               <Select
-                value={formData.category}
+                value={formData.category.slug}
                 onValueChange={(value) => handleChange("category", value)}
                 required
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
-                <SelectContent>
-                  {CATEGORIES.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
+                <SelectContent position="item-aligned">
+                  {categories.map((category) => (
+                    <SelectItem key={category.slug} value={category.slug}>
+                      {category.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -186,7 +226,7 @@ export default function SubmitSkillPage() {
                 onValueChange={(value) => handleChange("skillLevel", value)}
               >
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="Beginner" id="beginner" />
+                  <RadioGroupItem value="beginner" id="beginner" />
                   <Label
                     htmlFor="beginner"
                     className="font-normal cursor-pointer"
@@ -195,7 +235,7 @@ export default function SubmitSkillPage() {
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="Intermediate" id="intermediate" />
+                  <RadioGroupItem value="intermediate" id="intermediate" />
                   <Label
                     htmlFor="intermediate"
                     className="font-normal cursor-pointer"
@@ -204,7 +244,7 @@ export default function SubmitSkillPage() {
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="Expert" id="expert" />
+                  <RadioGroupItem value="expert" id="expert" />
                   <Label
                     htmlFor="expert"
                     className="font-normal cursor-pointer"
@@ -227,30 +267,6 @@ export default function SubmitSkillPage() {
               <p className="text-sm text-gray-500">
                 Where will you offer this skill?
               </p>
-            </div>
-
-            {/* Availability */}
-            <div className="space-y-2">
-              <Label htmlFor="availability">
-                Availability / Time Slots (Optional)
-              </Label>
-              <Input
-                id="availability"
-                placeholder="e.g., Weekday evenings, Weekend mornings"
-                value={formData.availability}
-                onChange={(e) => handleChange("availability", e.target.value)}
-              />
-            </div>
-
-            {/* Duration */}
-            <div className="space-y-2">
-              <Label htmlFor="duration">Duration</Label>
-              <Input
-                id="duration"
-                placeholder="e.g., 1 hour, 2 hours"
-                value={formData.duration}
-                onChange={(e) => handleChange("duration", e.target.value)}
-              />
             </div>
 
             {/* Mode */}
@@ -285,8 +301,13 @@ export default function SubmitSkillPage() {
 
             {/* Submit Button */}
             <div className="flex gap-3 pt-4">
-              <Button type="submit" size="lg" className="flex-1">
-                Submit Skill
+              <Button
+                type="submit"
+                size="lg"
+                className="flex-1"
+                disabled={isLoading}
+              >
+                {isLoading ? "Saving..." : "Submit Skill"}
               </Button>
               <Button
                 type="button"

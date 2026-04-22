@@ -1,19 +1,58 @@
 "use client";
 
 import SkillCard from "@/components/ui/skill-card";
-import { CATEGORIES, mockSkills } from "@/data/mockData";
+import { useCurrentUser } from "@/hooks/auth";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
-export default function SkillCategories() {
-  const [activeTab, setActiveTab] = useState("All");
+interface Category {
+  name: string;
+  slug: string;
+}
 
-  // Filter Logic
+interface SkillData {
+  id: number;
+  attributes?: {
+    title: string;
+    description: string;
+    category: string | { name: string };
+    [key: string]: unknown;
+  };
+  title?: string;
+  description?: string;
+  category?: string | { name: string };
+  [key: string]: unknown;
+}
+
+function flattenSkill(skill: SkillData) {
+  if (skill.attributes) {
+    return { ...skill.attributes, id: skill.id };
+  }
+  return skill;
+}
+
+export default function SkillCategories({
+  skillsData,
+  categories = [],
+}: {
+  skillsData: SkillData[];
+  categories?: Category[];
+}) {
+  const [activeTab, setActiveTab] = useState("All");
+  const { data } = useCurrentUser();
+
+  const flatSkills = skillsData.map(flattenSkill);
+  console.log({ data });
   const filteredSkills =
     activeTab === "All"
-      ? mockSkills
-      : mockSkills.filter((skill) => skill.category === activeTab);
+      ? flatSkills
+      : flatSkills.filter((skill) => {
+          const skillCat = skill.category;
+          return typeof skillCat === "string"
+            ? skillCat === activeTab
+            : skillCat?.name === activeTab;
+        });
 
   return (
     <section id="skill-categories" className="max-w-6xl mx-auto p-6 my-20">
@@ -33,17 +72,17 @@ export default function SkillCategories() {
 
         {/* CATEGORY BUTTONS */}
         <div className="flex flex-wrap justify-center gap-2 mb-12">
-          {CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <button
-              key={cat}
-              onClick={() => setActiveTab(cat)}
+              key={cat.slug}
+              onClick={() => setActiveTab(cat.name)}
               className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
-                activeTab === cat
+                activeTab === cat.name
                   ? "bg-black text-white shadow-md"
                   : "bg-slate-100 text-slate-600 hover:bg-slate-200"
               }`}
             >
-              {cat}
+              {cat.name}
             </button>
           ))}
         </div>

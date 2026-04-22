@@ -2,31 +2,31 @@
 
 import { Button } from "@/components/ui/button";
 import {
-  NavigationMenu,
-  NavigationMenuList,
+    NavigationMenu,
+    NavigationMenuList,
 } from "@/components/ui/navigation-menu";
-import { useGlobalState } from "@/hooks/useGlobalState";
+import { useGlobalState } from "@/hooks/GlobalState";
 import { LogOut, PlusCircle, Zap } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetTitle,
-  SheetTrigger,
+    Sheet,
+    SheetClose,
+    SheetContent,
+    SheetTitle,
+    SheetTrigger,
 } from "../sheet";
 
 import { Icon } from "@iconify/react";
 import {
-  Briefcase,
-  Calendar,
-  LayoutDashboard,
-  Lightbulb,
-  MessageSquare,
-  Settings,
-  User,
+    Briefcase,
+    Calendar,
+    LayoutDashboard,
+    Lightbulb,
+    MessageSquare,
+    Settings,
+    User,
 } from "lucide-react";
 import { CgClose } from "react-icons/cg";
 import AdminNavBox from "./admin-nav";

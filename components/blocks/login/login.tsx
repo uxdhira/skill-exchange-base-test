@@ -11,8 +11,8 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { currentUser } from "@/data/mockData";
-import { useGlobalState } from "@/hooks/useGlobalState";
+import { useCurrentUser, useLogin } from "@/hooks/auth";
+import { useGlobalState } from "@/hooks/GlobalState";
 import Link from "next/link"; // react extends html anchor a component for client side navigation between pages or routes
 import { useRouter } from "next/navigation"; // Hook for redirection
 import { useState } from "react";
@@ -30,20 +30,37 @@ export default function LoginPage() {
   // `useRouter` lets us navigate in code after login succeeds.
   const router = useRouter();
   const { loginUser } = useGlobalState();
+  const loginMutation = useLogin();
+  const { data: currentUser, isLoading } = useCurrentUser();
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   // This is a React event handler for form submission.
   // Handle form submit and log in the demo user.
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const userData = currentUser;
-    loginUser(userData);
+    try {
+      const result = await loginMutation.mutateAsync({
+        identifier: email,
+        password,
+      });
+      const newUser = {
+        id: result.user.id.toString(),
+        name: result.user.username,
+        email: result.user.email,
+        profile: result.user.profile,
+      };
+      console.log({ result });
 
-    // Move the user to the dashboard after login.
-    router.push("/dashboard");
+      loginUser(newUser);
+      // Move the user to the dashboard after login.
+      router.push("/dashboard");
+    } catch (error) {
+      console.error("Login failed:", error);
+    }
   };
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
       <Card className="w-full max-w-md border-none shadow-lg">
@@ -64,7 +81,8 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                defaultValue={"uxdhira@gmail.com"}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="your.email@example.com"
                 className="bg-slate-50/50 border-slate-200"
                 required
@@ -77,7 +95,8 @@ export default function LoginPage() {
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  defaultValue={"uxdk1234"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="........"
                   className="bg-slate-50/50 border-slate-200"
                   required
@@ -114,8 +133,9 @@ export default function LoginPage() {
             <Button
               type="submit"
               className="w-full bg-[#050510] hover:bg-slate-900 text-white font-semibold py-6"
+              disabled={loginMutation.isPending}
             >
-              Login
+              {loginMutation.isPending ? "Logging in..." : "Login"}
             </Button>
 
             <div className="text-center text-sm text-slate-500 pt-2">

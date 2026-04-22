@@ -4,17 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import SkillCard from "@/components/ui/skill-card";
-import { CATEGORIES } from "@/data/mockData";
-import { useGlobalState } from "@/hooks/useGlobalState";
+import { useGlobalState } from "@/hooks/GlobalState";
 import { MapPin, Search } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 // `use client` is required because this page uses React state and form interaction.
 // This page uses Shadcn UI components like `Card`, `Button`, `Input`, and `Select`.
@@ -31,6 +30,30 @@ export default function BrowseSkills() {
   const [locationFilter, setLocationFilter] = useState("");
   const { mockSkillData } = useGlobalState();
   const [selectedRating, setSelectedRating] = useState<string>("all");
+
+  interface Category {
+    id: number;
+    attributes: {
+      name: string;
+      slug: string;
+    };
+  }
+  const [categories, setCategories] = useState<Category["attributes"][]>([]);
+
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const response = await fetch("/api/categories");
+        const data = await response.json();
+        if (data.data) {
+          setCategories(data.data.map((cat: Category) => cat.attributes));
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    }
+    fetchCategories();
+  }, []);
 
   // Keep only the skills that match all selected filters.
   const filteredSkills = mockSkillData.filter((skill) => {
@@ -97,9 +120,9 @@ export default function BrowseSkills() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
-                  {CATEGORIES.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
+                  {categories.map((category) => (
+                    <SelectItem key={category.slug} value={category.name}>
+                      {category.name}
                     </SelectItem>
                   ))}
                 </SelectContent>

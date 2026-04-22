@@ -1,6 +1,6 @@
 "use client";
 
-import { useGlobalState } from "@/hooks/useGlobalState";
+import { useGlobalState } from "@/hooks/GlobalState";
 import Link from "next/link";
 import { Button } from "../../button";
 

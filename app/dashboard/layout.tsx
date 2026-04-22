@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import Navbar from "@/components/ui/nav/navbar-dash";
 import UserSidebar from "@/components/ui/nav/sidebar";
-import { MockStateProvider } from "@/hooks/useGlobalState";
+import { MockStateProvider } from "@/hooks/GlobalState";
 
 // `Metadata` is a Next.js type.
 // We use it here to define the default title and description for the dashboard area.
