@@ -1,7 +1,25 @@
 "use client";
 
+import {
+  AlertCircle,
+  ArrowRightLeft,
+  Calendar,
+  CheckCircle2,
+  ChevronLeft,
+  Flag,
+  MapPin,
+  Monitor,
+  RotateCcw,
+  Star,
+  Trash2,
+  XCircle,
+} from "lucide-react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,48 +40,146 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { mockBookings, mockSkills } from "@/data/mockData";
+import { useCurrentUser } from "@/hooks/auth";
 import {
-  AlertCircle,
-  Calendar,
-  CheckCircle,
-  ChevronLeft,
-  Clock,
-  Flag,
-  MapPin,
-  Monitor,
-  RotateCcw,
-  Star,
-  XCircle,
-} from "lucide-react";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { useState } from "react";
-import { toast } from "sonner";
+  useBooking,
+  useDeleteBooking,
+  useUpdateBooking,
+} from "@/hooks/bookings";
 
-export default function BookingDetail() {
+function formatDateTime(value?: string | null) {
+  if (!value) return "To be confirmed";
+
+  return new Date(value).toLocaleString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function formatDuration(minutes?: number | null) {
+  if (!minutes) return "Duration not set";
+  if (minutes < 60) return `${minutes} min`;
+
+  const hours = Math.floor(minutes / 60);
+  const remaining = minutes % 60;
+  return remaining ? `${hours} hr ${remaining} min` : `${hours} hr`;
+}
+
+function formatMode(mode?: string | null) {
+  if (mode === "inperson" || mode === "in_person") return "In person";
+  if (mode === "hybrid") return "Hybrid";
+  if (mode === "online") return "Online";
+  return "To be confirmed";
+}
+
+function formatStatus(status) {
+  console.log({ status });
+  if (status === "completed" || status === "complete") return "Completed";
+  if (status === "cancelled") return "Cancelled";
+  if (status === "pending") return "Pending";
+  if (status === "accepted") return "Accepted";
+  if (status === "rejected") return "Rejected";
+
+  return status;
+}
+function getStatusClasses(status) {
+  switch (status) {
+    case "pending":
+      return "bg-amber-50 text-amber-700 border-amber-200";
+    case "accepted":
+      return "bg-emerald-50 text-emerald-700 border-emerald-200";
+    case "completed":
+    case "complete":
+      return "bg-sky-50 text-sky-700 border-sky-200";
+    case "rejected":
+      return "bg-rose-50 text-rose-700 border-rose-200";
+    case "cancelled":
+      return "bg-slate-100 text-slate-700 border-slate-200";
+    default:
+      return "bg-slate-100 text-slate-700 border-slate-200";
+  }
+}
+
+function getInitials(name?: string) {
+  return (name || "User")
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+function ParticipantCard({
+  title,
+  role,
+  name,
+  skillTitle,
+  profileImage,
+}: {
+  title: string;
+  role: "Provider" | "Requester";
+  name: string;
+  skillTitle: string;
+  profileImage: any;
+}) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+      <div className="flex items-center gap-3">
+        <Avatar className="h-11 w-11 ring-1 ring-slate-200">
+          <AvatarImage src={profileImage.url} />
+          <AvatarFallback>{name}</AvatarFallback>
+        </Avatar>
+        <div>
+          <p className="text-xs uppercase tracking-wide text-slate-500">
+            {title}
+          </p>
+          <p className="font-medium text-slate-900">{name}</p>
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div className="rounded-lg bg-white p-3 ring-1 ring-slate-200">
+          <p className="text-xs uppercase tracking-wide text-slate-500">Role</p>
+          <p className="mt-1 font-medium text-slate-900">{role}</p>
+        </div>
+        <div className="rounded-lg bg-white p-3 ring-1 ring-slate-200">
+          <p className="text-xs uppercase tracking-wide text-slate-500">
+            Skill
+          </p>
+          <p className="mt-1 font-medium text-slate-900">{skillTitle}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function BookingDetailPage() {
   const searchParams = useSearchParams();
-  const id = searchParams.get("id");
-  const currentUserId = "user-1";
+  const documentId = searchParams.get("id") || "";
 
-  const booking = mockBookings.find((b) => b.id === id);
-  const skill = booking
-    ? mockSkills.find((s) => s.id === booking.skillId)
-    : null;
-  const offeredSkill = booking
-    ? mockSkills.find((s) => s.id === booking.offeredSkillId)
-    : null;
-
-  const isProvider = booking?.providerId === currentUserId;
-  const isRequester = booking?.requesterId === currentUserId;
+  const {
+    data: user,
+    isLoading: userLoading,
+    error: userError,
+  } = useCurrentUser();
+  const profileDocumentId = user?.profile?.documentId || "";
+  const { data: booking, isLoading, error } = useBooking(documentId);
+  const updateBooking = useUpdateBooking();
+  const deleteBooking = useDeleteBooking();
 
   const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [isReasonOpen, setIsReasonOpen] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reportDetails, setReportDetails] = useState("");
   const [rescheduleData, setRescheduleData] = useState({
-    date: "",
-    time: "",
+    scheduledAt: "",
     reason: "",
   });
   const [reviewData, setReviewData] = useState({
@@ -71,254 +187,341 @@ export default function BookingDetail() {
     comment: "",
   });
 
-  if (!booking) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold mb-1">Booking Not Found</h1>
-          <p className="text-gray-600">The requested booking does not exist.</p>
-        </div>
-        <Link href="/dashboard/mybookings">
-          <Button variant="outline">
-            <ChevronLeft className="h-4 w-4 mr-2" />
-            Back to My Bookings
-          </Button>
-        </Link>
-      </div>
-    );
-  }
+  const perspective = useMemo(() => {
+    if (!booking || !profileDocumentId) return null;
+    if (booking.provider?.documentId === profileDocumentId) return "provider";
+    if (booking.requester?.documentId === profileDocumentId) return "requester";
+    return null;
+  }, [booking, profileDocumentId]);
 
-  const otherPerson = isProvider
-    ? { name: booking.requesterName, role: "Student" }
-    : { name: booking.providerName, role: "Teacher" };
+  const requestedSkillTitle =
+    booking?.requestedSkill?.title || "Requested skill";
+  const providedSkillTitle = booking?.providedSkill?.title || "Provided skill";
 
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("");
-  };
+  const handleStatusUpdate = async (
+    bookingStatus:
+      | "accepted"
+      | "rejected"
+      | "completed"
+      | "cancelled"
+      | "pending",
+  ) => {
+    if (!booking) return;
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "bg-yellow-100 text-yellow-700";
-      case "accepted":
-        return "bg-green-100 text-green-700";
-      case "completed":
-        return "bg-blue-100 text-blue-700";
-      default:
-        return "bg-gray-100 text-gray-700";
+    try {
+      await updateBooking.mutateAsync({
+        documentId: booking?.documentId,
+        data: { bookingStatus },
+      });
+      toast.success(`Booking marked as ${bookingStatus}.`);
+    } catch {
+      toast.error("Failed to update booking.");
     }
   };
 
-  const getModeLabel = (mode: string) => {
-    switch (mode) {
-      case "online":
-        return "Online";
-      case "in_person":
-        return "In Person";
-      case "hybrid":
-        return "Hybrid";
-      default:
-        return mode;
-    }
-  };
-
-  const handleAccept = () => {
-    toast.success("Booking accepted successfully");
-  };
-
-  const handleReject = () => {
-    toast.success("Booking rejected");
-  };
-
-  const handleCancel = () => {
-    toast.success("Booking cancelled successfully");
-  };
-
-  const handleReschedule = (e: React.FormEvent) => {
+  const handleReschedule = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Reschedule request sent");
-    setIsRescheduleOpen(false);
-    setRescheduleData({ date: "", time: "", reason: "" });
+    if (!booking) return;
+
+    try {
+      await updateBooking.mutateAsync({
+        documentId: booking.documentId || booking.id,
+        data: {
+          scheduledAt: new Date(rescheduleData.scheduledAt).toISOString(),
+          requesterMessage:
+            perspective === "requester" && rescheduleData.reason
+              ? rescheduleData.reason
+              : booking.requesterMessage || "",
+          providerMessage:
+            perspective === "provider" && rescheduleData.reason
+              ? rescheduleData.reason
+              : booking.providerMessage || "",
+        },
+      });
+      toast.success("Reschedule request sent.");
+      setIsRescheduleOpen(false);
+      setRescheduleData({ scheduledAt: "", reason: "" });
+    } catch {
+      toast.error("Failed to update booking.");
+    }
   };
 
-  const handleComplete = () => {
-    toast.success("Booking marked as completed");
-    setIsReviewOpen(true);
+  const handleDelete = async () => {
+    if (!booking) return;
+
+    try {
+      await deleteBooking.mutateAsync(booking.documentId);
+      toast.success("Booking deleted successfully.");
+    } catch {
+      toast.error("Failed to delete booking.");
+    }
   };
 
   const handleReviewSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Review submitted successfully");
+    toast.success("Review submitted successfully.");
     setIsReviewOpen(false);
     setReviewData({ rating: 0, comment: "" });
   };
 
+  const handleReportSubmit = () => {
+    if (!reportReason) {
+      toast.error("Please select a reason.");
+      return;
+    }
+
+    toast.error("Report submitted. We’ll review it shortly.");
+    setIsReportOpen(false);
+    setReportReason("");
+    setReportDetails("");
+  };
+
+  if (userLoading || isLoading) {
+    return (
+      <div className="space-y-6">
+        <Link href="/dashboard/mybookings">
+          <Button variant="ghost" size="sm">
+            <ChevronLeft className="mr-1 h-4 w-4" />
+            Back to My Bookings
+          </Button>
+        </Link>
+        <p className="text-slate-600">Loading booking details...</p>
+      </div>
+    );
+  }
+
+  if (userError || error) {
+    return (
+      <div className="space-y-6">
+        <Link href="/dashboard/mybookings">
+          <Button variant="ghost" size="sm">
+            <ChevronLeft className="mr-1 h-4 w-4" />
+            Back to My Bookings
+          </Button>
+        </Link>
+        <p className="text-red-600">We couldn’t load this booking right now.</p>
+      </div>
+    );
+  }
+
+  if (!documentId || !booking) {
+    return (
+      <div className="space-y-6">
+        <Link href="/dashboard/mybookings">
+          <Button variant="ghost" size="sm">
+            <ChevronLeft className="mr-1 h-4 w-4" />
+            Back to My Bookings
+          </Button>
+        </Link>
+        <Card>
+          <CardContent className="py-16 text-center">
+            <h1 className="text-3xl font-bold">Booking Not Found</h1>
+            <p className="mt-2 text-slate-600">
+              The booking you are looking for does not exist.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!perspective) {
+    return (
+      <div className="space-y-6">
+        <Link href="/dashboard/mybookings">
+          <Button variant="ghost" size="sm">
+            <ChevronLeft className="mr-1 h-4 w-4" />
+            Back to My Bookings
+          </Button>
+        </Link>
+        <Card>
+          <CardContent className="py-16 text-center">
+            <h1 className="text-3xl font-bold">Booking Not Available</h1>
+            <p className="mt-2 text-slate-600">
+              This booking is not assigned to your current profile.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const amProvider = perspective === "provider";
+  const canDelete =
+    booking.bookingStatus === "rejected" ||
+    booking.bookingStatus === "cancelled";
+  console.log({ booking });
   return (
     <div className="space-y-6">
       <Link href="/dashboard/mybookings">
         <Button variant="ghost" size="sm">
-          <ChevronLeft className="h-4 w-4 mr-1" />
+          <ChevronLeft className="mr-1 h-4 w-4" />
           Back to My Bookings
         </Button>
       </Link>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h2 className="text-xl font-semibold">Booking Details</h2>
+      <div className="grid gap-6 lg:grid-cols-[1.8fr_1fr]">
+        <div className="space-y-6">
+          <Card className="overflow-hidden">
+            <div className="border-b bg-slate-50/80 px-6 py-5">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-slate-700 ring-1 ring-slate-200">
+                      {amProvider
+                        ? "You are the provider"
+                        : "You are the requester"}
+                    </span>
                     <span
-                      className={`px-3 py-1 rounded-full text-sm font-medium capitalize ${getStatusColor(booking.status)}`}
+                      className={`rounded-full px-2.5 py-1 text-xs font-medium ${getStatusClasses(
+                        booking.bookingStatus,
+                      )}`}
                     >
-                      {booking.status}
+                      {formatStatus(booking.bookingStatus)}
                     </span>
                   </div>
-                  <CardDescription>
-                    Booked on{" "}
-                    {new Date(booking.createdAt).toLocaleDateString("en-US", {
-                      weekday: "long",
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </CardDescription>
+                  <div>
+                    <h1 className="text-2xl font-bold text-slate-900">
+                      {requestedSkillTitle}
+                    </h1>
+                    <p className="mt-1 text-sm text-slate-600">
+                      {amProvider
+                        ? "This booking was created for one of your skills."
+                        : "This is a booking you requested from another member."}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border bg-white px-4 py-3 text-sm shadow-sm">
+                  <p className="text-slate-500">Scheduled</p>
+                  <p className="font-medium text-slate-900">
+                    {formatDateTime(booking.scheduledAt)}
+                  </p>
                 </div>
               </div>
-            </CardHeader>
+            </div>
 
-            <Separator />
+            <CardContent className="space-y-6 px-6 py-6">
+              <div className="grid gap-4 xl:grid-cols-2">
+                <ParticipantCard
+                  title="You"
+                  role={amProvider ? "Provider" : "Requester"}
+                  name={
+                    amProvider
+                      ? booking.provider?.firstName || "You"
+                      : booking.requester?.firstName || "You"
+                  }
+                  skillTitle={
+                    amProvider ? requestedSkillTitle : providedSkillTitle
+                  }
+                  profileImage={amProvider && booking.provider?.avatar}
+                />
+                <ParticipantCard
+                  title="Other Person"
+                  role={amProvider ? "Requester" : "Provider"}
+                  name={
+                    amProvider
+                      ? booking.requester?.firstName || "Requester"
+                      : booking.provider?.firstName || "Provider"
+                  }
+                  skillTitle={
+                    amProvider ? providedSkillTitle : requestedSkillTitle
+                  }
+                  profileImage={!amProvider && booking.requester?.avatar}
+                />
+              </div>
 
-            <CardContent className="pt-6">
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-semibold mb-4">
-                    Skills Exchange
-                  </h3>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <Card className="bg-blue-50 border-blue-200">
-                      <CardHeader>
-                        <CardDescription className="text-blue-900">
-                          {isProvider
-                            ? "They want to learn"
-                            : "You want to learn"}
-                        </CardDescription>
-                        <CardTitle className="text-blue-900">
-                          {booking.skillTitle}
-                        </CardTitle>
-                        <Badge variant="outline" className="w-fit bg-white">
-                          {skill?.category || "Skill"}
-                        </Badge>
-                      </CardHeader>
-                    </Card>
+              <Separator />
 
-                    <Card className="bg-green-50 border-green-200">
-                      <CardHeader>
-                        <CardDescription className="text-green-900">
-                          {isProvider ? "You will learn" : "In exchange for"}
-                        </CardDescription>
-                        <CardTitle className="text-green-900">
-                          {booking.offeredSkillTitle}
-                        </CardTitle>
-                        <Badge variant="outline" className="w-fit bg-white">
-                          {offeredSkill?.category || "Skill"}
-                        </Badge>
-                      </CardHeader>
-                    </Card>
+              <div>
+                <div className="mb-4 flex items-center gap-2">
+                  <ArrowRightLeft className="h-4 w-4 text-slate-500" />
+                  <h2 className="text-lg font-semibold">Skill Exchange</h2>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+                    <p className="text-xs uppercase tracking-wide text-slate-500">
+                      Requested skill
+                    </p>
+                    <p className="mt-1 text-lg font-semibold text-slate-900">
+                      {requestedSkillTitle}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+                    <p className="text-xs uppercase tracking-wide text-slate-500">
+                      Exchange skill
+                    </p>
+                    <p className="mt-1 text-lg font-semibold text-slate-900">
+                      {providedSkillTitle}
+                    </p>
                   </div>
                 </div>
+              </div>
 
-                <Separator />
+              <Separator />
 
-                <div>
-                  <h3 className="text-lg font-semibold mb-4">Schedule</h3>
-                  <div className="grid gap-4">
-                    <div className="flex items-center gap-3">
-                      <Calendar className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm font-medium">Date</p>
-                        <p className="text-sm text-muted-foreground">
-                          {booking.date
-                            ? new Date(booking.date).toLocaleDateString(
-                                "en-US",
-                                {
-                                  weekday: "long",
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                                },
-                              )
-                            : "TBD"}
-                        </p>
-                      </div>
+              <div>
+                <div className="mb-4 flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-slate-500" />
+                  <h2 className="text-lg font-semibold">Session Details</h2>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="rounded-xl border border-slate-200 p-4">
+                    <p className="text-sm text-slate-500">When</p>
+                    <p className="mt-1 font-medium text-slate-900">
+                      {formatDateTime(booking.scheduledAt)}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 p-4">
+                    <p className="text-sm text-slate-500">Duration</p>
+                    <p className="mt-1 font-medium text-slate-900">
+                      {formatDuration(booking.durationMinutes)}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 p-4">
+                    <div className="flex items-center gap-2 text-sm text-slate-500">
+                      <MapPin className="h-4 w-4" />
+                      Location
                     </div>
-
-                    <div className="flex items-center gap-3">
-                      <Clock className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm font-medium">Time</p>
-                        <p className="text-sm text-muted-foreground">
-                          {booking.time || "TBD"}
-                        </p>
-                      </div>
+                    <p className="mt-1 font-medium text-slate-900">
+                      {booking.location || "To be confirmed"}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 p-4">
+                    <div className="flex items-center gap-2 text-sm text-slate-500">
+                      <Monitor className="h-4 w-4" />
+                      Mode
                     </div>
-
-                    <div className="flex items-center gap-3">
-                      <MapPin className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm font-medium">Location</p>
-                        <p className="text-sm text-muted-foreground">
-                          {booking.location || "TBD"}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <Clock className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm font-medium">Duration</p>
-                        <p className="text-sm text-muted-foreground">
-                          {skill?.duration || "TBD"}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <Monitor className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm font-medium">Mode</p>
-                        <p className="text-sm text-muted-foreground">
-                          {skill ? getModeLabel(skill.mode) : "TBD"}
-                        </p>
-                      </div>
-                    </div>
+                    <p className="mt-1 font-medium text-slate-900">
+                      {formatMode(booking.mode)}
+                    </p>
                   </div>
                 </div>
+              </div>
 
-                <Separator />
+              <Separator />
 
-                <div>
-                  <h3 className="text-lg font-semibold mb-4">
-                    {isProvider ? "Student" : "Teacher"} Details
-                  </h3>
-                  <div className="flex items-center gap-4">
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage src="/profile.jpg" />
-                      <AvatarFallback>
-                        {getInitials(otherPerson.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-medium">{otherPerson.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {otherPerson.role}
-                      </p>
-                    </div>
+              <div>
+                <div className="mb-4 flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 text-slate-500" />
+                  <h2 className="text-lg font-semibold">Messages</h2>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="rounded-xl border border-slate-200 bg-white p-4">
+                    <p className="text-sm font-medium text-slate-700">
+                      Requester message
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">
+                      {booking.requesterMessage || "No requester message yet."}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 bg-white p-4">
+                    <p className="text-sm font-medium text-slate-700">
+                      Provider message
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">
+                      {booking.providerMessage || "No provider message yet."}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -330,134 +533,118 @@ export default function BookingDetail() {
           <Card>
             <CardHeader>
               <CardTitle>Actions</CardTitle>
+              <CardDescription>
+                These actions depend on whether you are the provider or
+                requester.
+              </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-2">
-              {/* Teacher/Provider side - received bookings */}
-              {isProvider && booking.status === "pending" && (
+            <CardContent className="space-y-3">
+              {amProvider && booking.bookingStatus === "pending" && (
                 <>
                   <Button
-                    className="w-full bg-green-600 hover:bg-green-700"
-                    onClick={handleAccept}
+                    className="w-full"
+                    onClick={() => handleStatusUpdate("accepted")}
                   >
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Accept Booking
+                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                    Accept booking
                   </Button>
                   <Button
                     variant="outline"
                     className="w-full"
-                    onClick={handleReject}
+                    onClick={() => handleStatusUpdate("rejected")}
                   >
-                    <XCircle className="h-4 w-4 mr-2" />
-                    Reject Booking
+                    <XCircle className="mr-2 h-4 w-4" />
+                    Reject booking
                   </Button>
                 </>
               )}
 
-              {isProvider && booking.status === "accepted" && (
-                <>
+              {booking.bookingStatus === "accepted" && (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setIsRescheduleOpen(true)}
+                >
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  Request reschedule
+                </Button>
+              )}
+
+              {amProvider && booking.bookingStatus === "accepted" && (
+                <Button
+                  className="w-full"
+                  onClick={() => handleStatusUpdate("completed")}
+                >
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                  Mark completed
+                </Button>
+              )}
+
+              {!amProvider &&
+                (booking.bookingStatus === "pending" ||
+                  booking.bookingStatus === "accepted") && (
                   <Button
                     variant="outline"
                     className="w-full"
-                    onClick={() => setIsRescheduleOpen(true)}
+                    onClick={() => handleStatusUpdate("cancelled")}
                   >
-                    <RotateCcw className="h-4 w-4 mr-2" />
-                    Request Reschedule
+                    <XCircle className="mr-2 h-4 w-4" />
+                    Cancel booking
                   </Button>
-                  <Button
-                    className="w-full bg-green-600 hover:bg-green-700"
-                    onClick={handleComplete}
-                  >
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Mark as Completed
-                  </Button>
-                </>
+                )}
+
+              {!amProvider && booking.bookingStatus === "completed" && (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setIsReviewOpen(true)}
+                >
+                  <Star className="mr-2 h-4 w-4" />
+                  Write review
+                </Button>
               )}
 
-              {isProvider && booking.status === "complete" && (
+              {(booking.bookingStatus === "completed" ||
+                booking.bookingStatus === "complete") && (
+                <Button
+                  variant="outline"
+                  className="w-full border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800"
+                  onClick={() => setIsReportOpen(true)}
+                >
+                  <Flag className="mr-2 h-4 w-4" />
+                  Report issue
+                </Button>
+              )}
+
+              {booking.bookingStatus === "rejected" && (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setIsReasonOpen(true)}
+                >
+                  <AlertCircle className="mr-2 h-4 w-4" />
+                  View rejection reason
+                </Button>
+              )}
+
+              {booking.requestedSkillDocumentId && (
+                <Link
+                  href={`/dashboard/skill-details/${booking.requestedSkillDocumentId}`}
+                >
+                  <Button variant="ghost" className="w-full">
+                    View requested skill
+                  </Button>
+                </Link>
+              )}
+
+              {canDelete && (
                 <Button
                   variant="ghost"
-                  size="sm"
-                  onClick={() => setIsReportOpen(true)}
-                  className="w-full text-red-600 hover:text-red-700 hover:bg-red-100 border-1 border-red-400"
+                  className="w-full text-rose-700 hover:bg-rose-50 hover:text-rose-800"
+                  onClick={handleDelete}
                 >
-                  <Flag className="h-4 w-4 mr-2" />
-                  Report
-                </Button>
-              )}
-
-              {isProvider && booking.status === "rejected" && (
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => setIsReasonOpen(true)}
-                >
-                  <AlertCircle className="h-4 w-4 mr-2" />
-                  View Reason
-                </Button>
-              )}
-
-              {/* Learner/Requester side - sent bookings */}
-              {!isProvider && booking.status === "pending" && (
-                <>
-                  <Button
-                    className="w-full bg-amber-600 text-white hover:bg-amber-800 hover:text-white hover:border-1 hover:border-slate-300 border border-slate-500 border-1"
-                    onClick={handleCancel}
-                  >
-                    <XCircle className="h-4 w-4 mr-2" />
-                    Cancel Booking
-                  </Button>
-                </>
-              )}
-
-              {!isProvider && booking.status === "accepted" && (
-                <>
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => setIsRescheduleOpen(true)}
-                  >
-                    <RotateCcw className="h-4 w-4 mr-2" />
-                    Request Reschedule
-                  </Button>
-                  <Button
-                    className="w-full bg-amber-600 text-white hover:bg-amber-800 hover:text-white hover:border-1 hover:border-slate-300 border border-slate-500 border-1"
-                    onClick={handleCancel}
-                  >
-                    <XCircle className="h-4 w-4 mr-2" />
-                    Cancel Booking
-                  </Button>
-                </>
-              )}
-
-              {!isProvider && booking.status === "complete" && (
-                <>
-                  <Button
-                    className="w-full border-purple-600 border-1 bg-slate-300 text-slate-900 hover:text-purple-700 hover:bg-purple-100 hover:border-slate-600 hover:border-1"
-                    onClick={() => setIsReviewOpen(true)}
-                  >
-                    <Star className="h-4 w-4 mr-2" />
-                    Write a Review
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsReportOpen(true)}
-                    className="w-full text-red-600 hover:text-red-700 hover:bg-red-50"
-                  >
-                    <Flag className="h-4 w-4 mr-2" />
-                    Report
-                  </Button>
-                </>
-              )}
-
-              {!isProvider && booking.status === "rejected" && (
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => setIsReasonOpen(true)}
-                >
-                  <AlertCircle className="h-4 w-4 mr-2" />
-                  View Reason
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete booking
                 </Button>
               )}
             </CardContent>
@@ -470,22 +657,22 @@ export default function BookingDetail() {
           <DialogHeader>
             <DialogTitle>Request Reschedule</DialogTitle>
             <DialogDescription>
-              Propose a new date and time for this booking
+              Propose a new date and time for this booking.
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleReschedule}>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="reschedule-date">New Date</Label>
+                <Label htmlFor="scheduled-at">New schedule</Label>
                 <Input
-                  id="reschedule-date"
-                  type="date"
-                  value={rescheduleData.date}
+                  id="scheduled-at"
+                  type="datetime-local"
+                  value={rescheduleData.scheduledAt}
                   onChange={(e) =>
                     setRescheduleData({
                       ...rescheduleData,
-                      date: e.target.value,
+                      scheduledAt: e.target.value,
                     })
                   }
                   required
@@ -493,26 +680,11 @@ export default function BookingDetail() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="reschedule-time">New Time</Label>
-                <Input
-                  id="reschedule-time"
-                  type="time"
-                  value={rescheduleData.time}
-                  onChange={(e) =>
-                    setRescheduleData({
-                      ...rescheduleData,
-                      time: e.target.value,
-                    })
-                  }
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="reschedule-reason">Reason</Label>
+                <Label htmlFor="reason">Reason</Label>
                 <Textarea
-                  id="reschedule-reason"
-                  placeholder="Please explain why you need to reschedule"
+                  id="reason"
+                  rows={4}
+                  placeholder="Explain why you need to move the session."
                   value={rescheduleData.reason}
                   onChange={(e) =>
                     setRescheduleData({
@@ -520,7 +692,6 @@ export default function BookingDetail() {
                       reason: e.target.value,
                     })
                   }
-                  rows={3}
                   required
                 />
               </div>
@@ -534,7 +705,7 @@ export default function BookingDetail() {
               >
                 Cancel
               </Button>
-              <Button type="submit">Send Reschedule Request</Button>
+              <Button type="submit">Send request</Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -545,7 +716,7 @@ export default function BookingDetail() {
           <DialogHeader>
             <DialogTitle>Write a Review</DialogTitle>
             <DialogDescription>
-              Share your experience with {otherPerson.name}
+              Share your experience after completing this exchange.
             </DialogDescription>
           </DialogHeader>
 
@@ -567,7 +738,7 @@ export default function BookingDetail() {
                         className={`h-8 w-8 ${
                           star <= reviewData.rating
                             ? "fill-yellow-400 text-yellow-400"
-                            : "text-gray-300"
+                            : "text-slate-300"
                         }`}
                       />
                     </button>
@@ -576,15 +747,15 @@ export default function BookingDetail() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="review-comment">Your Review</Label>
+                <Label htmlFor="review-comment">Your review</Label>
                 <Textarea
                   id="review-comment"
-                  placeholder="Share your experience..."
+                  rows={4}
                   value={reviewData.comment}
                   onChange={(e) =>
                     setReviewData({ ...reviewData, comment: e.target.value })
                   }
-                  rows={4}
+                  placeholder="Tell others how the session went."
                   required
                 />
               </div>
@@ -598,12 +769,8 @@ export default function BookingDetail() {
               >
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                className="bg-purple-600 hover:bg-purple-700"
-                disabled={reviewData.rating === 0}
-              >
-                Submit Review
+              <Button type="submit" disabled={reviewData.rating === 0}>
+                Submit review
               </Button>
             </DialogFooter>
           </form>
@@ -613,32 +780,42 @@ export default function BookingDetail() {
       <Dialog open={isReportOpen} onOpenChange={setIsReportOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Report User</DialogTitle>
+            <DialogTitle>Report Issue</DialogTitle>
             <DialogDescription>
-              Help us understand what went wrong with this booking
+              Help us understand what went wrong with this booking.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
-            <div>
-              <Label>Reason</Label>
-              <select className="w-full border rounded-md px-3 py-2 text-sm">
+            <div className="space-y-2">
+              <Label htmlFor="report-reason">Reason</Label>
+              <select
+                id="report-reason"
+                className="w-full rounded-md border px-3 py-2 text-sm"
+                value={reportReason}
+                onChange={(e) => setReportReason(e.target.value)}
+              >
                 <option value="">Select a reason</option>
                 <option value="harassment">
-                  Harassment or inappropriate behavior
+                  Harassment or unsafe behavior
                 </option>
-                <option value="no-show">No-show or unreliability</option>
-                <option value="inappropriate">Inappropriate content</option>
-                <option value="scam">Suspicious activity or scam</option>
+                <option value="no-show">
+                  No-show or unreliable attendance
+                </option>
+                <option value="inappropriate">Inappropriate conduct</option>
+                <option value="scam">Suspicious or scam-like activity</option>
                 <option value="other">Other</option>
               </select>
             </div>
 
-            <div>
-              <Label>Additional Details</Label>
+            <div className="space-y-2">
+              <Label htmlFor="report-details">Additional details</Label>
               <Textarea
+                id="report-details"
                 rows={4}
-                placeholder="Please describe what happened..."
+                value={reportDetails}
+                onChange={(e) => setReportDetails(e.target.value)}
+                placeholder="Please describe what happened."
               />
             </div>
           </div>
@@ -647,7 +824,9 @@ export default function BookingDetail() {
             <Button variant="outline" onClick={() => setIsReportOpen(false)}>
               Cancel
             </Button>
-            <Button variant="destructive">Submit Report</Button>
+            <Button variant="destructive" onClick={handleReportSubmit}>
+              Submit report
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -656,19 +835,17 @@ export default function BookingDetail() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Rejection Reason</DialogTitle>
+            <DialogDescription>
+              Current note attached to the rejected booking.
+            </DialogDescription>
           </DialogHeader>
 
-          <div className="py-4">
-            <p className="text-gray-600">
-              The booking was rejected. Here is the reason provided:
+          <div className="rounded-xl border bg-slate-50 p-4">
+            <p className="text-sm leading-6 text-slate-600">
+              {booking.providerMessage ||
+                booking.requesterMessage ||
+                "No rejection note was saved for this booking."}
             </p>
-            <div className="mt-3 p-3 bg-gray-100 rounded-lg">
-              <Textarea
-                defaultValue="The scheduling didn't work out for me at this time. Let's reconnect later!"
-                rows={3}
-                readOnly
-              />
-            </div>
           </div>
 
           <DialogFooter>

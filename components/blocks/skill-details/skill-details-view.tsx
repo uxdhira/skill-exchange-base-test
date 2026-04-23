@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { users } from "@/data/mockData";
 import { Skill } from "@/types";
 import { ArrowLeft, Clock, Info, MapPin, Star, User } from "lucide-react";
 import Image from "next/image";
@@ -37,14 +36,45 @@ export default function SkillDetailsView({
   >("Online");
   const [formData, setFormData] = useState({ preferredSchedule: "" });
 
-  const provider = users.find((u) => u.id === skill.userId) || {
-    id: skill.userId,
-    name: skill.userName,
-    avatar: "/profile.jpg",
-    location: skill.location,
-    rating: skill.userRating,
-    reviewCount: 0,
-  };
+  const categoryName =
+    typeof skill.category === "string" ? skill.category : skill.category?.name || "Uncategorized";
+
+  const owner = skill.owner;
+  const providerName =
+    [owner?.firstName, owner?.lastName].filter(Boolean).join(" ").trim() ||
+    owner?.user?.username ||
+    skill.userName ||
+    "Unknown";
+
+  const providerLocation = owner?.location || skill.location || "Online";
+  const providerRating = skill.userRating || 0;
+  const providerReviewCount = owner?.totalReviews || 0;
+  const providerAvatar =
+    owner?.avatar && typeof owner.avatar === "object" && "url" in owner.avatar
+      ? owner.avatar.url
+      : typeof owner?.avatar === "string"
+        ? owner.avatar
+        : "/profile.jpg";
+
+  const image = skill.image as
+    | string
+    | {
+        url?: string;
+        formats?: {
+          medium?: { url?: string };
+          small?: { url?: string };
+          thumbnail?: { url?: string };
+        };
+      }
+    | undefined;
+
+  const imageUrl =
+    typeof image === "string"
+      ? image
+      : image?.formats?.medium?.url ||
+        image?.formats?.small?.url ||
+        image?.formats?.thumbnail?.url ||
+        image?.url;
 
   const providerBio = "Passionate skill provider eager to share knowledge!";
 
@@ -65,7 +95,7 @@ export default function SkillDetailsView({
     <div className="max-w-6xl mx-auto p-4 space-y-6">
       <Button
         variant={"ghost"}
-        onClick={() => router.back()}
+        onClick={() => (backUrl ? router.push(backUrl) : router.back())}
         className="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-black"
       >
         <ArrowLeft className="h-4 w-4" />
@@ -82,9 +112,9 @@ export default function SkillDetailsView({
         <div className={showSidebar ? "lg:col-span-2" : ""}>
           <Card className="p-0 overflow-hidden rounded-2xl">
             <div className="h-60 bg-slate-200 flex items-center justify-center text-slate-400 font-bold uppercase tracking-widest">
-              {skill.image ? (
+              {imageUrl ? (
                 <Image
-                  src={skill.image}
+                  src={imageUrl}
                   alt={skill.title}
                   width={440}
                   height={400}
@@ -92,13 +122,13 @@ export default function SkillDetailsView({
                   unoptimized
                 />
               ) : (
-                skill.category
+                categoryName
               )}
             </div>
             <CardContent className="p-8 space-y-6">
               <div className="flex gap-2">
                 <Badge className="bg-blue-100 text-blue-700">
-                  {skill.category}
+                  {categoryName}
                 </Badge>
                 <Badge className="bg-purple-100 text-purple-700">
                   {skill.skillLevel}
@@ -108,18 +138,18 @@ export default function SkillDetailsView({
               <h1 className="text-3xl font-bold">{skill.title}</h1>
 
               <div className="flex flex-wrap gap-6 text-sm text-slate-500">
-                <span>by {skill.userName}</span>
+                <span>by {providerName}</span>
                 <span className="flex items-center gap-1">
                   <MapPin className="h-4 w-4" />
-                  {skill.location}
+                  {skill.location || "Online"}
                 </span>
                 <span className="flex items-center gap-1">
                   <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                  {skill.userRating}
+                  {providerRating}
                 </span>
                 <span className="flex items-center gap-1">
                   <Clock className="h-4 w-4" />
-                  {skill.duration}
+                  {skill.duration || "TBD"}
                 </span>
               </div>
 
@@ -139,21 +169,21 @@ export default function SkillDetailsView({
                   </div>
                   <div className="space-y-1">
                     <p className="text-slate-500">Category</p>
-                    <p className="font-medium">{skill.category}</p>
+                    <p className="font-medium">{categoryName}</p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-slate-500">Mode</p>
                     <p className="font-medium capitalize">
-                      {skill.mode.replace("_", " ")}
+                      {skill.mode.replace("inperson", "in person").replace("_", " ")}
                     </p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-slate-500">Duration</p>
-                    <p className="font-medium">{skill.duration}</p>
+                    <p className="font-medium">{skill.duration || "TBD"}</p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-slate-500">Location</p>
-                    <p className="font-medium">{skill.location}</p>
+                    <p className="font-medium">{skill.location || "Online"}</p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-slate-500">Availability</p>
@@ -183,19 +213,19 @@ export default function SkillDetailsView({
 
               <div className="flex items-start gap-3 mb-4">
                 <Avatar className="h-16 w-16">
-                  <AvatarImage src={provider.avatar} alt={provider.name} />
-                  <AvatarFallback>{provider.name.charAt(0)}</AvatarFallback>
+                  <AvatarImage src={providerAvatar} alt={providerName} />
+                  <AvatarFallback>{providerName.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                  <h3 className="font-semibold mb-1">{provider.name}</h3>
+                  <h3 className="font-semibold mb-1">{providerName}</h3>
                   <div className="flex items-center gap-1 text-sm mb-2">
                     <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span className="font-medium">{provider.rating}</span>
+                    <span className="font-medium">{providerRating}</span>
                     <span className="text-gray-500">
-                      ({provider.reviewCount} reviews)
+                      ({providerReviewCount} reviews)
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600">{provider.location}</p>
+                  <p className="text-sm text-gray-600">{providerLocation}</p>
                 </div>
               </div>
 
@@ -213,7 +243,7 @@ export default function SkillDetailsView({
                   </Button>
 
                   <Link
-                    href={`/dashboard/users-profile?id=${skill.userId}`}
+                    href={`/dashboard/users-profile?id=${owner?.documentId || skill.userId}`}
                     className="w-full mt-2 px-2 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
                   >
                     <User className="h-5 w-5" />

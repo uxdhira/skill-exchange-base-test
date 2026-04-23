@@ -1,9 +1,30 @@
 "use client";
 
 import type { Skill } from "@/types";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const OWNER_SKILLS_KEY = (ownerId: string) => ["owner-skills", ownerId];
+const SKILLS_KEY = (page: number, pageSize: number) => ["skills", page, pageSize];
+
+export async function fetchSkills(page = 1, pageSize = 100) {
+  const response = await fetch(`/api/skills?page=${page}&pageSize=${pageSize}`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch skills");
+  }
+
+  const result = await response.json();
+
+  return { data: result.data, meta: result.meta };
+}
+
+export function useSkills(page = 1, pageSize = 100) {
+  return useQuery<{ data: Skill[]; meta: unknown }, Error>({
+    queryKey: SKILLS_KEY(page, pageSize),
+    queryFn: () => fetchSkills(page, pageSize),
+    staleTime: 1000 * 60 * 5,
+  });
+}
 
 export async function fetchOwnerSkills(ownerId: string) {
   const response = await fetch(`/api/skills/owner/${ownerId}`);
@@ -18,11 +39,72 @@ export async function fetchOwnerSkills(ownerId: string) {
 }
 
 export function useOwnerSkills(ownerId: string) {
-  return useQuery<{ data: Skill[]; meta: any }, Error>({
+  return useQuery<{ data: Skill[]; meta: unknown }, Error>({
     queryKey: OWNER_SKILLS_KEY(ownerId),
     queryFn: () => fetchOwnerSkills(ownerId),
     enabled: !!ownerId,
     staleTime: 1000 * 60 * 5,
+  });
+}
+
+export function useCreateSkill() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      formData,
+    }: {
+      formData: FormData;
+      ownerId: string;
+    }) => {
+      const response = await fetch("/api/skills", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create skill");
+      }
+
+      return response.json();
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: OWNER_SKILLS_KEY(variables.ownerId),
+      });
+    },
+  });
+}
+
+export function useUpdateSkill() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      formData,
+    }: {
+      id: string;
+      formData: FormData;
+      ownerId: string;
+    }) => {
+      const response = await fetch(`/api/skills/${id}`, {
+        method: "PUT",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update skill");
+      }
+
+      return response.json();
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: OWNER_SKILLS_KEY(variables.ownerId),
+      });
+      queryClient.invalidateQueries({ queryKey: ["skill", variables.id] });
+    },
   });
 }
 
@@ -37,19 +119,7 @@ export async function fetchSkillById(id: string) {
 
   if (result.data) {
     const skill = result.data;
-    console.log("Fetched skill:", skill);
-    return {
-      id: skill.id,
-      title: skill.title,
-      description: skill.description,
-      category: skill.category || "",
-
-      skillLevel: skill.skillLevel,
-      location: skill.location,
-      mode: skill.mode,
-      currentStatus: skill.currentStatus,
-      createdAt: skill.createdAt,
-    };
+    return skill;
   }
 
   return null;

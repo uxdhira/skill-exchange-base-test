@@ -1,6 +1,6 @@
 "use client";
 
-import type { User } from "@/types";
+import type { Profile } from "@/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const AUTH_KEY = ["auth", "user"];
@@ -30,14 +30,7 @@ export interface StrapiUser {
   provider: string;
   createdAt: string;
   updatedAt: string;
-  profile?: {
-    id: number;
-    avatar?: string;
-    bio?: string;
-    location?: string;
-    rating?: number;
-    reviewCount?: number;
-  };
+  profile?: Profile;
 }
 
 interface LoginResponse {
@@ -92,7 +85,7 @@ async function logout(): Promise<void> {
   });
 }
 
-async function fetchCurrentUser(): Promise<User> {
+async function fetchCurrentUser(): Promise<StrapiUser> {
   const response = await fetch("/api/auth/user");
 
   if (!response.ok) {

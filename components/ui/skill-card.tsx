@@ -22,6 +22,46 @@ const SkillCard = ({
     return typeof cat === "string" ? cat : cat?.name || "Uncategorized";
   };
 
+  const getOwnerName = () => {
+    const owner = skill.owner as
+      | { firstName?: string; lastName?: string; user?: { username?: string } }
+      | undefined;
+
+    const fullName = [owner?.firstName, owner?.lastName]
+      .filter(Boolean)
+      .join(" ")
+      .trim();
+
+    return fullName || owner?.user?.username || (skill.userName as string) || "Unknown";
+  };
+
+  const getImageUrl = () => {
+    if (!skill.image) return null;
+
+    if (typeof skill.image === "string") {
+      return skill.image;
+    }
+
+    const image = skill.image as {
+      url?: string;
+      formats?: {
+        medium?: { url?: string };
+        small?: { url?: string };
+        thumbnail?: { url?: string };
+      };
+    };
+
+    return (
+      image.formats?.medium?.url ||
+      image.formats?.small?.url ||
+      image.formats?.thumbnail?.url ||
+      image.url ||
+      null
+    );
+  };
+
+  const imageUrl = getImageUrl();
+
   return (
     <Card
       key={skill.id}
@@ -30,26 +70,15 @@ const SkillCard = ({
       <div className="flex-1">
         <CardHeader className="p-0">
           <div className="overflow-hidden h-50 bg-slate-200 flex items-center justify-center text-slate-400 font-bold uppercase tracking-widest group-hover:bg-slate-300 transition-colors">
-            {skill.image ? (
-              typeof skill.image === "string" ? (
+            {imageUrl ? (
                 <Image
-                  src={skill.image}
+                  src={imageUrl}
                   alt={skill.title}
                   width={440}
                   height={300}
                   className="w-full h-full object-cover rounded-t-2xl group-hover:brightness-50 group-hover:scale-125 transition duration-300 delay-75"
                   unoptimized
                 />
-              ) : (
-                <Image
-                  src={(skill.image as { url: string }).url}
-                  alt={skill.title}
-                  width={440}
-                  height={300}
-                  className="w-full h-full object-cover rounded-t-2xl group-hover:brightness-50 group-hover:scale-125 transition duration-300 delay-75"
-                  unoptimized
-                />
-              )
             ) : (
               getCategoryName()
             )}
@@ -74,7 +103,7 @@ const SkillCard = ({
             <div className="space-y-2 text-sm">
               <div className="flex items-center justify-between">
                 <span className="text-gray-500">
-                  by {(skill.userName as string) || "Unknown"}
+                  by {getOwnerName()}
                 </span>
 
                 <div className="flex items-center gap-1">
@@ -88,9 +117,11 @@ const SkillCard = ({
               <div className="flex justify-between gap-8 text-gray-600">
                 <span className="flex items-center gap-1">
                   <Monitor className="w-4 h-4" />
-                  <span className="capitalize">
-                    {((skill.mode as string) || "online").replace("_", " ")}
-                  </span>
+                    <span className="capitalize">
+                    {((skill.mode as string) || "online")
+                      .replace("inperson", "in person")
+                      .replace("_", " ")}
+                    </span>
                 </span>
                 <span className="flex items-center gap-1">
                   <Clock className="w-4 h-4" />

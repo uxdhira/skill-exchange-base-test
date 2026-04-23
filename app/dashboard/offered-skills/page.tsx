@@ -22,6 +22,44 @@ export default function MySkills() {
     error: skillsError,
   } = useOwnerSkills(user?.profile?.documentId || "");
 
+  const mySkills = skillsData?.data || [];
+
+  if (userLoading || skillsLoading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">My Skills</h1>
+          <p className="text-gray-600 mt-1">
+            Manage the skills you are offering to the community
+          </p>
+        </div>
+        <Card>
+          <CardContent className="py-12 text-center text-gray-600">
+            Loading your skills...
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (userError || skillsError) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">My Skills</h1>
+          <p className="text-gray-600 mt-1">
+            Manage the skills you are offering to the community
+          </p>
+        </div>
+        <Card>
+          <CardContent className="py-12 text-center text-red-600">
+            Failed to load your skills.
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -39,7 +77,7 @@ export default function MySkills() {
         </Link>
       </div>
 
-      {skillsData?.data.length === 0 ? (
+      {mySkills.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -56,7 +94,7 @@ export default function MySkills() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {skillsData?.data.map((skill) => (
+          {mySkills.map((skill) => (
             <SkillCard
               key={skill.id}
               skill={skill}

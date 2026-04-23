@@ -22,7 +22,7 @@ export default function DashboardHomePage() {
     isLoading: skillsLoading,
     error: skillsError,
   } = useOwnerSkills(user?.profile?.documentId || "");
-
+  console.log({ skillsData });
   // Only show skills posted by the logged-in user.
   const mySkills = skillsData?.data || [];
   // Show bookings where the user is either the sender or the receiver.
@@ -213,7 +213,7 @@ export default function DashboardHomePage() {
                   size="sm"
                   className="border border-1 border-slate-400"
                 >
-                  <Link href={`/dashboard/skill-details/${skill.id}`}>
+                  <Link href={`/dashboard/skill-details/${skill.documentId}`}>
                     View
                   </Link>
                 </Button>

@@ -15,9 +15,40 @@ export interface User {
   reviewCount: number;
 }
 
+export interface Profile {
+  id: string;
+  documentId?: string;
+  firstName?: string;
+  lastName?: string;
+  bio?: string | null;
+  location?: string | null;
+  avatar?:
+    | string
+    | {
+        url?: string;
+      }
+    | null;
+  rating?: number | null;
+  totalReviews?: number | null;
+  exchangeCompleted?: number | null;
+  skillsOffered?: number | null;
+  pauseProfile?: boolean | null;
+  availability?: AvailabilitySlot[] | null;
+  privacy?: Record<string, unknown> | null;
+  notifications?: Record<string, unknown> | null;
+}
+
+export interface AvailabilitySlot {
+  id?: number;
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+}
+
 // This describes one skill listed by a user.
 export interface Skill {
   id: string;
+  documentId?: string;
   title: string;
   description: string;
   category: string | { name: string; [key: string]: unknown };
@@ -27,8 +58,24 @@ export interface Skill {
   userName: string;
   userRating: number;
   image?: { url: string } | string;
+  owner?: {
+    documentId?: string;
+    firstName?: string;
+    lastName?: string;
+    location?: string | null;
+    totalReviews?: number | null;
+    avatar?:
+      | string
+      | {
+          url?: string;
+        }
+      | null;
+    user?: {
+      username?: string;
+    };
+  };
   availability?: string;
-  mode: "online" | "in_person" | "hybrid";
+  mode: "online" | "in_person" | "inperson" | "hybrid";
   duration: string;
   status: "pending" | "accepted" | "rejected" | "completed";
   createdAt: string;
@@ -37,6 +84,7 @@ export interface Skill {
 // This describes a booking request between two users.
 export interface Booking {
   id: string;
+  documentId?: string;
   skillId: string;
   skillTitle: string;
   offeredSkillId: string;
@@ -46,11 +94,28 @@ export interface Booking {
   providerId: string;
   providerName: string;
   message: string;
-  status: "pending" | "accepted" | "rejected" | "complete";
+  bookingStatus:
+    | "pending"
+    | "accepted"
+    | "rejected"
+    | "complete"
+    | "completed"
+    | "cancelled";
   createdAt: string;
   date?: string;
   time?: string;
   location?: string;
+  requestedSkillDocumentId?: string;
+  providedSkillDocumentId?: string;
+  mode?: "online" | "in_person" | "inperson" | "hybrid";
+  durationMinutes?: number | null;
+  scheduledAt?: string | null;
+  providerMessage?: string | null;
+  requesterMessage?: string | null;
+  requestedSkill?: Skill | null;
+  providedSkill?: Skill | null;
+  provider?: Profile | null;
+  requester?: Profile | null;
 }
 
 // This describes a review left after a skill session.
@@ -82,5 +147,5 @@ export interface RequestedSkill {
   userName: string;
   createdAt: string;
   duration?: string;
-  mode?: "online" | "in_person" | "hybrid";
+  mode?: "online" | "in_person" | "inperson" | "hybrid";
 }

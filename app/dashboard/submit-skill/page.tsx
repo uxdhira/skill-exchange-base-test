@@ -25,8 +25,9 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { useCurrentUser } from "@/hooks/auth";
 import { useCategories } from "@/hooks/categories";
-import { useSkill } from "@/hooks/skill";
+import { useCreateSkill, useSkill, useUpdateSkill } from "@/hooks/skill";
 import { ArrowLeft, Upload } from "lucide-react";
+import Image from "next/image";
 import { toast } from "sonner";
 
 // `use client` is required because this page uses hooks, form events,
@@ -55,19 +56,6 @@ export default function SubmitSkillPage() {
   const skillId = searchParams.get("id");
 
   const { data: skillData, isLoading: skillLoading } = useSkill(skillId || "");
-  console.log({ skillData });
-  useEffect(() => {
-    if (skillData && isEdit) {
-      setFormData({
-        title: skillData.title || "",
-        description: skillData.description || "",
-        category: skillData.category || "",
-        skillLevel: skillData.skillLevel || "Beginner",
-        location: skillData.location || "",
-        mode: skillData.mode || "online",
-      });
-    }
-  }, [skillData, isEdit]);
 
   // `useState` is used for controlled form inputs.
   // We use it so input fields always stay connected to React state.
@@ -85,68 +73,141 @@ export default function SubmitSkillPage() {
     useCategories();
   const categories = categoriesData?.data || [];
   const [isLoading, setIsLoading] = useState(false);
-  console.log({ formData });
-  // Create or update a skill when the form is submitted.
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
 
-    const selectedCategory = categories.find(
-      (c) => c.slug === formData.category,
-    );
+  const createSkill = useCreateSkill();
+  const updateSkill = useUpdateSkill();
 
-    const skillData = {
-      title: formData.title,
-      description: formData.description,
-      category: selectedCategory?.documentId,
-      skillLevel: formData.skillLevel.toLowerCase(),
-      mode: formData.mode.toLowerCase(),
-      currentStatus: "pending",
-      owner: user?.profile?.documentId,
-    };
-
-    console.log({ skillData, selectedCategory, formData });
-    try {
-      let response;
-      if (isEdit && skillId) {
-        response = await fetch(`/api/skills/${skillId}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(skillData),
-        });
-      } else {
-        response = await fetch("/api/skills", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(skillData),
-        });
-      }
-
-      if (!response.ok) {
-        throw new Error("Failed to save skill");
-      }
-
-      const toastMessage = isEdit
-        ? "Your skill has been updated successfully!"
-        : "Your skill has been created and accepted from our Team. Happy Learning!";
-      toast(toastMessage, { position: "top-center" });
-
-      router.push("/dashboard/offered-skills");
-    } catch (error) {
-      console.error("Error saving skill:", error);
-      toast("Failed to save skill. Please try again.", {
-        position: "top-center",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const isMutating = createSkill.isPending || updateSkill.isPending;
 
   // Update one field inside the form state.
   // This supports the controlled form pattern in React.
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      // 1. Guard: auth + owner
+      const ownerId = user?.profile?.documentId;
+      if (!ownerId) {
+        toast("Please login to create a skill", { position: "top-center" });
+        return;
+      }
+
+      // 2. Resolve category properly
+      const categorySlug =
+        typeof formData.category === "string"
+          ? formData.category
+          : formData.category?.slug;
+
+      const selectedCategory = categories.find((c) => c.slug === categorySlug);
+
+      if (!selectedCategory?.documentId) {
+        throw new Error("Invalid category selected");
+      }
+
+      // 3. Build multipart payload (STRICT Strapi format)
+      const multipart = new FormData();
+      // Bundle all non-file data into a SINGLE stringified JSON object under the "data" key
+
+      // Bundle data into one string
+      const dataPayload = {
+        title: formData.title,
+        description: formData.description,
+        skillLevel: formData.skillLevel.toLowerCase(),
+        mode: formData.mode.toLowerCase(),
+        currentStatus: "pending",
+        location: formData.location,
+        category: selectedCategory.documentId, // Use documentId string
+        owner: user.profile.documentId, // Use documentId string
+      };
+
+      multipart.append("data", JSON.stringify(dataPayload));
+
+      // Pass multipart to your mutateAsync...
+
+      // Append the file separately under the "files.<fieldName>" key
+      if (selectedImage) {
+        multipart.append("files.image", selectedImage);
+      }
+
+      // 6. Mutation (React Query)
+      if (isEdit && skillId) {
+        await updateSkill.mutateAsync({
+          id: skillId,
+          formData: multipart,
+          ownerId,
+        });
+      } else {
+        await createSkill.mutateAsync({
+          formData: multipart,
+          ownerId,
+        });
+      }
+
+      // 7. UX feedback
+      toast(
+        isEdit
+          ? "Skill updated successfully"
+          : "Skill created and sent for review",
+        { position: "top-center" },
+      );
+
+      // 8. Redirect
+      router.push("/dashboard/offered-skills");
+    } catch (error: any) {
+      console.error("Error saving skill:", error);
+
+      toast(error?.message || "Failed to save skill. Please try again.", {
+        position: "top-center",
+      });
+    }
+  };
   const handleChange = (field: string, value: string) => {
     setFormData({ ...formData, [field]: value });
   };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        toast("Please select an image file (PNG, JPG, JPEG)", {
+          position: "top-center",
+        });
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        toast("File size must be less than 10MB", { position: "top-center" });
+        return;
+      }
+      setSelectedImage(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const removeImage = () => {
+    setSelectedImage(null);
+    setImagePreview("");
+  };
+  useEffect(() => {
+    if (skillData && isEdit) {
+      setFormData({
+        title: skillData.title || "",
+        description: skillData.description || "",
+        category: skillData.category || "",
+        skillLevel: skillData.skillLevel || "Beginner",
+        location: skillData.location || "",
+        mode:
+          skillData.mode === "inperson"
+            ? "in_person"
+            : (skillData.mode ?? "online"),
+      });
+      if (skillData.image && skillData.image?.url) {
+        setImagePreview(skillData.image.url);
+      }
+    }
+  }, [skillData, isEdit]);
   return (
     <div className="space-y-6">
       <Button variant="ghost" onClick={() => router.back()}>
@@ -281,7 +342,7 @@ export default function SubmitSkillPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="online">Online</SelectItem>
-                  <SelectItem value="in_person">In Person</SelectItem>
+                  <SelectItem value="inperson">In Person</SelectItem>
                   <SelectItem value="hybrid">Hybrid</SelectItem>
                 </SelectContent>
               </Select>
@@ -290,13 +351,40 @@ export default function SubmitSkillPage() {
             {/* Upload Images/Samples */}
             <div className="space-y-2">
               <Label>Upload Images / Samples (Optional)</Label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors cursor-pointer">
-                <Upload className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                <p className="text-sm text-gray-600 mb-1">
-                  Click to upload or drag and drop
-                </p>
-                <p className="text-xs text-gray-500">PNG, JPG up to 10MB</p>
-              </div>
+              {!imagePreview ? (
+                <label className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors cursor-pointer block">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageChange}
+                  />
+                  <Upload className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+                  <p className="text-sm text-gray-600 mb-1">
+                    Click to upload or drag and drop
+                  </p>
+                  <p className="text-xs text-gray-500">PNG, JPG up to 10MB</p>
+                </label>
+              ) : (
+                <div className="relative border-2 border-gray-300 rounded-lg p-4">
+                  <Image
+                    src={imagePreview}
+                    alt="Preview"
+                    width={"500"}
+                    height={50}
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="absolute top-2 right-2"
+                    onClick={removeImage}
+                  >
+                    Remove
+                  </Button>
+                </div>
+              )}
             </div>
 
             {/* Submit Button */}
@@ -307,7 +395,11 @@ export default function SubmitSkillPage() {
                 className="flex-1"
                 disabled={isLoading}
               >
-                {isLoading ? "Saving..." : "Submit Skill"}
+                {isMutating
+                  ? "Saving..."
+                  : isEdit
+                    ? "Update Skill"
+                    : "Submit Skill"}
               </Button>
               <Button
                 type="button"
