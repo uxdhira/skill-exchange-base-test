@@ -129,12 +129,10 @@ export async function POST(request: NextRequest) {
     });
 
     const createdSkill = await createResponse.json();
-    console.log("createdSkill");
 
     if (!createResponse.ok) {
       return NextResponse.json(createdSkill, { status: createResponse.status });
     }
-    console.log("here", file);
 
     if (!(file instanceof File)) {
       return NextResponse.json(createdSkill, { status: createResponse.status });
@@ -184,7 +182,6 @@ export async function POST(request: NextRequest) {
     );
 
     const attachedSkill = await attachResponse.json();
-    console.log({ attachedSkill });
     return NextResponse.json(attachedSkill, { status: attachResponse.status });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);

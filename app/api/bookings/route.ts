@@ -123,42 +123,72 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    // 1. Auth
     const token = await getToken();
 
     if (!token) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    const body = await request.json();
+    // 2. Parse body safely
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
+
+    if (!body?.data) {
+      return NextResponse.json(
+        { error: "Missing data payload" },
+        { status: 400 },
+      );
+    }
+
+    // 3. Construct payload
     const payload = {
-      ...body?.data,
-      bookingStatus: "pending",
+      ...body.data,
+      bookingStatus: "pending", // MUST match Strapi enum exactly
     };
 
-    const response = await fetch(
-      `${STRAPI_URL}/api/bookings?${buildPopulateQuery()}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ data: payload }),
+    console.log("Creating booking payload:", payload);
+
+    // 4. Correct API call (FIXED URL)
+    const response = await fetch(`${STRAPI_URL}/api/bookings`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
-    );
+      body: JSON.stringify({ data: payload }),
+    });
 
-    const result = await response.json();
+    // 5. Safe response parsing (DO NOT assume JSON)
+    const rawText = await response.text();
 
+    let result;
+    try {
+      result = JSON.parse(rawText);
+    } catch {
+      result = { error: rawText };
+    }
+
+    // 6. Handle API errors properly
     if (!response.ok) {
+      console.error("Strapi error:", result);
       return NextResponse.json(result, { status: response.status });
     }
 
+    // 7. Normalize + return
     return NextResponse.json(
-      { data: normalizeBooking(result.data) },
-      { status: response.status },
+      {
+        data: normalizeBooking(result.data),
+      },
+      { status: 201 },
     );
   } catch (error) {
     console.error("Error creating booking:", error);
+
     return NextResponse.json(
       { error: "Failed to create booking" },
       { status: 500 },

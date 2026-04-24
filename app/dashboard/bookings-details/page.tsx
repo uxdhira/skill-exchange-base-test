@@ -10,6 +10,7 @@ import {
   MapPin,
   Monitor,
   RotateCcw,
+  SquareArrowOutUpRight,
   Star,
   Trash2,
   XCircle,
@@ -46,6 +47,8 @@ import {
   useDeleteBooking,
   useUpdateBooking,
 } from "@/hooks/bookings";
+import { useCreateReport } from "@/hooks/reports";
+import { useCreateReview, useReviewsByBooking } from "@/hooks/reviews";
 
 function formatDateTime(value?: string | null) {
   if (!value) return "To be confirmed";
@@ -77,7 +80,6 @@ function formatMode(mode?: string | null) {
 }
 
 function formatStatus(status) {
-  console.log({ status });
   if (status === "completed" || status === "complete") return "Completed";
   if (status === "cancelled") return "Cancelled";
   if (status === "pending") return "Pending";
@@ -131,7 +133,7 @@ function ParticipantCard({
     <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
       <div className="flex items-center gap-3">
         <Avatar className="h-11 w-11 ring-1 ring-slate-200">
-          <AvatarImage src={profileImage.url} />
+          <AvatarImage src={profileImage?.url} />
           <AvatarFallback>{name}</AvatarFallback>
         </Avatar>
         <div>
@@ -171,6 +173,10 @@ export default function BookingDetailPage() {
   const { data: booking, isLoading, error } = useBooking(documentId);
   const updateBooking = useUpdateBooking();
   const deleteBooking = useDeleteBooking();
+  const createReview = useCreateReview();
+  const { isLoading: reviewsLoading, data: reviews } =
+    useReviewsByBooking(documentId);
+  const createReport = useCreateReport();
 
   const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
@@ -186,6 +192,7 @@ export default function BookingDetailPage() {
     rating: 0,
     comment: "",
   });
+  const [accepterMessage, setAccepterMessage] = useState("");
 
   const perspective = useMemo(() => {
     if (!booking || !profileDocumentId) return null;
@@ -207,11 +214,19 @@ export default function BookingDetailPage() {
       | "pending",
   ) => {
     if (!booking) return;
-
     try {
+      const messageField = accepterMessage?.trim()
+        ? perspective === "requester"
+          ? { requesterMessage: accepterMessage }
+          : { providerMessage: accepterMessage }
+        : {};
+
       await updateBooking.mutateAsync({
         documentId: booking?.documentId,
-        data: { bookingStatus },
+        data: {
+          bookingStatus,
+          ...messageField,
+        },
       });
       toast.success(`Booking marked as ${bookingStatus}.`);
     } catch {
@@ -257,23 +272,89 @@ export default function BookingDetailPage() {
     }
   };
 
-  const handleReviewSubmit = (e: React.FormEvent) => {
+  const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Review submitted successfully.");
-    setIsReviewOpen(false);
-    setReviewData({ rating: 0, comment: "" });
+
+    if (!booking || reviewData.rating === 0) {
+      toast.error("Please select a rating.");
+      return;
+    }
+
+    if (!profileDocumentId) {
+      toast.error("Unable to identify your profile.");
+      return;
+    }
+    const reviewState = {
+      booking: booking.documentId,
+      // Always the current user
+      fromUser: profileDocumentId,
+
+      // The OTHER user in the booking
+      toUser:
+        booking.provider?.documentId === profileDocumentId
+          ? booking.requester!.documentId
+          : booking.provider!.documentId,
+      skill:
+        perspective === "provider"
+          ? booking.providedSkill?.documentId
+          : booking.requestedSkill?.documentId,
+      rating: reviewData.rating,
+      comment: reviewData.comment,
+    };
+
+    try {
+      await createReview.mutateAsync(reviewState);
+      toast.success("Review submitted successfully.");
+      setIsReviewOpen(false);
+      setReviewData({ rating: 0, comment: "" });
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to submit review.");
+    }
   };
 
-  const handleReportSubmit = () => {
+  const handleReportSubmit = async () => {
     if (!reportReason) {
       toast.error("Please select a reason.");
       return;
     }
 
-    toast.error("Report submitted. We’ll review it shortly.");
-    setIsReportOpen(false);
-    setReportReason("");
-    setReportDetails("");
+    if (!booking?.documentId) {
+      toast.error("Unable to identify the booking.");
+      return;
+    }
+
+    if (!profileDocumentId) {
+      toast.error("Unable to identify your profile.");
+      return;
+    }
+
+    const reportedUser =
+      booking.provider?.documentId === profileDocumentId
+        ? booking.requester?.documentId
+        : booking.provider?.documentId;
+
+    if (!reportedUser) {
+      toast.error("Unable to identify the user to report.");
+      return;
+    }
+    const currentReport = {
+      booking: booking.documentId,
+      reporter: profileDocumentId,
+      reportedUser,
+      reason: reportReason,
+      cause: reportDetails,
+    };
+    console.log({ currentReport });
+
+    try {
+      await createReport.mutateAsync(currentReport);
+      toast.success("Report submitted. We'll review it shortly.");
+      setIsReportOpen(false);
+      setReportReason("");
+      setReportDetails("");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to submit report.");
+    }
   };
 
   if (userLoading || isLoading) {
@@ -350,7 +431,7 @@ export default function BookingDetailPage() {
   const canDelete =
     booking.bookingStatus === "rejected" ||
     booking.bookingStatus === "cancelled";
-  console.log({ booking });
+  console.log({ booking, reviews });
   return (
     <div className="space-y-6">
       <Link href="/dashboard/mybookings">
@@ -496,6 +577,27 @@ export default function BookingDetailPage() {
                       {formatMode(booking.mode)}
                     </p>
                   </div>
+                  <div className="rounded-xl border border-slate-200 p-4 space-y-3">
+                    {/* Meeting Link */}
+                    {booking.meetingLink &&
+                      booking.bookingStatus === "accepted" && (
+                        <div>
+                          <div className="flex items-center gap-2 text-sm text-slate-500">
+                            <SquareArrowOutUpRight className="h-4 w-4" />
+                            Meeting
+                          </div>
+
+                          <Link
+                            href={booking.meetingLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-1 inline-block font-medium text-blue-600 hover:underline break-all"
+                          >
+                            Join Meeting
+                          </Link>
+                        </div>
+                      )}
+                  </div>
                 </div>
               </div>
 
@@ -509,7 +611,9 @@ export default function BookingDetailPage() {
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="rounded-xl border border-slate-200 bg-white p-4">
                     <p className="text-sm font-medium text-slate-700">
-                      Requester message
+                      {amProvider
+                        ? booking.provider?.firstName || "You"
+                        : booking.requester?.firstName || "You"}
                     </p>
                     <p className="mt-2 text-sm leading-6 text-slate-600">
                       {booking.requesterMessage || "No requester message yet."}
@@ -517,7 +621,9 @@ export default function BookingDetailPage() {
                   </div>
                   <div className="rounded-xl border border-slate-200 bg-white p-4">
                     <p className="text-sm font-medium text-slate-700">
-                      Provider message
+                      {amProvider
+                        ? booking.requester?.firstName || "Requester"
+                        : booking.provider?.firstName || "Provider"}
                     </p>
                     <p className="mt-2 text-sm leading-6 text-slate-600">
                       {booking.providerMessage || "No provider message yet."}
@@ -525,6 +631,77 @@ export default function BookingDetailPage() {
                   </div>
                 </div>
               </div>
+              <Card>
+                <CardContent className="p-6">
+                  <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                    <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
+                    Reviews ({reviews?.length || 0})
+                  </h2>
+
+                  {reviewsLoading ? (
+                    <p className="text-slate-500">Loading reviews...</p>
+                  ) : reviews?.length ? (
+                    <div className="space-y-4">
+                      {reviews.map((review) => {
+                        const reviewer = review.fromUser;
+
+                        return (
+                          <div
+                            key={review.documentId}
+                            className="border-b border-slate-100 pb-4 last:border-0 last:pb-0"
+                          >
+                            <div className="flex items-start gap-3">
+                              <Avatar className="h-10 w-10">
+                                <AvatarImage src={reviewer?.avatar?.url} />
+                                <AvatarFallback>
+                                  {`${reviewer?.firstName?.[0] || ""}${
+                                    reviewer?.lastName?.[0] || ""
+                                  }`}
+                                </AvatarFallback>
+                              </Avatar>
+
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between">
+                                  <p className="font-medium">
+                                    {reviewer?.firstName} {reviewer?.lastName}
+                                  </p>
+
+                                  <div className="flex items-center gap-1">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                      <Star
+                                        key={star}
+                                        className={`h-4 w-4 ${
+                                          star <= (review.rating || 0)
+                                            ? "fill-yellow-400 text-yellow-400"
+                                            : "text-slate-200"
+                                        }`}
+                                      />
+                                    ))}
+                                  </div>
+                                </div>
+
+                                {review.comment && (
+                                  <p className="mt-2 text-sm text-slate-600">
+                                    {review.comment}
+                                  </p>
+                                )}
+
+                                <p className="mt-1 text-xs text-slate-400">
+                                  {formatDateTime(review.createdAt)}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="text-slate-500">
+                      No reviews yet. Be the first to review this skill!
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
             </CardContent>
           </Card>
         </div>
@@ -541,6 +718,18 @@ export default function BookingDetailPage() {
             <CardContent className="space-y-3">
               {amProvider && booking.bookingStatus === "pending" && (
                 <>
+                  <div className="space-y-2">
+                    <Label htmlFor="accepter-message">Message</Label>
+                    <textarea
+                      id="accepter-message"
+                      className="w-full rounded-md border px-3 py-2 text-sm"
+                      value={accepterMessage}
+                      onChange={(e) => setAccepterMessage(e.target.value)}
+                      placeholder="Write your message..."
+                      rows={4}
+                      required
+                    />
+                  </div>
                   <Button
                     className="w-full"
                     onClick={() => handleStatusUpdate("accepted")}
@@ -593,16 +782,35 @@ export default function BookingDetailPage() {
                   </Button>
                 )}
 
-              {!amProvider && booking.bookingStatus === "completed" && (
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => setIsReviewOpen(true)}
-                >
-                  <Star className="mr-2 h-4 w-4" />
-                  Write review
-                </Button>
-              )}
+              {!amProvider &&
+                booking.bookingStatus === "completed" &&
+                !reviews?.some(
+                  (r) => r.fromUser?.documentId === profileDocumentId,
+                ) && (
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => setIsReviewOpen(true)}
+                  >
+                    <Star className="mr-2 h-4 w-4" />
+                    Write review
+                  </Button>
+                )}
+
+              {amProvider &&
+                booking.bookingStatus === "completed" &&
+                !reviews?.some(
+                  (r) => r.fromUser?.documentId === profileDocumentId,
+                ) && (
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => setIsReviewOpen(true)}
+                  >
+                    <Star className="mr-2 h-4 w-4" />
+                    Write review
+                  </Button>
+                )}
 
               {(booking.bookingStatus === "completed" ||
                 booking.bookingStatus === "complete") && (
@@ -796,15 +1004,19 @@ export default function BookingDetailPage() {
                 onChange={(e) => setReportReason(e.target.value)}
               >
                 <option value="">Select a reason</option>
-                <option value="harassment">
-                  Harassment or unsafe behavior
+                <option value="Harassment or inappropriate behavior">
+                  Harassment or inappropriate behavior
                 </option>
-                <option value="no-show">
-                  No-show or unreliable attendance
+                <option value="No-show or unreliability">
+                  No-show or unreliability
                 </option>
-                <option value="inappropriate">Inappropriate conduct</option>
-                <option value="scam">Suspicious or scam-like activity</option>
-                <option value="other">Other</option>
+                <option value="Inappropriate content">
+                  Inappropriate content
+                </option>
+                <option value="Suspicious activity or scam">
+                  Suspicious activity or scam
+                </option>
+                <option value="Other">Other</option>
               </select>
             </div>
 

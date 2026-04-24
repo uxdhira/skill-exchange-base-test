@@ -22,7 +22,6 @@ export default function DashboardHomePage() {
     isLoading: skillsLoading,
     error: skillsError,
   } = useOwnerSkills(user?.profile?.documentId || "");
-  console.log({ skillsData });
   // Only show skills posted by the logged-in user.
   const mySkills = skillsData?.data || [];
   // Show bookings where the user is either the sender or the receiver.

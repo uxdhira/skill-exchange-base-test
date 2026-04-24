@@ -10,6 +10,7 @@ import {
   Monitor,
   Plus,
   Search,
+  SquareArrowOutUpRight,
   Star,
   Trash2,
   XCircle,
@@ -41,19 +42,8 @@ import {
   useUpdateBooking,
 } from "@/hooks/bookings";
 import { useOwnerSkills, useSkills } from "@/hooks/skill";
+import { formatDateTime } from "@/lib/utils";
 import type { Booking, Skill } from "@/types";
-
-function formatDateTime(value?: string | null) {
-  if (!value) return "To be confirmed";
-
-  return new Date(value).toLocaleString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
 
 function formatDuration(minutes?: number | null) {
   if (!minutes) return "Duration not set";
@@ -139,7 +129,7 @@ function ParticipantCard({
     <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
       <div className="flex items-center gap-3">
         <Avatar className="h-11 w-11 ring-1 ring-slate-200">
-          <AvatarImage src={profileImage.url} />
+          <AvatarImage src={profileImage?.url} />
           <AvatarFallback>{name}</AvatarFallback>
         </Avatar>
         <div>
@@ -499,6 +489,24 @@ export default function MyBookingsPage() {
                       <p>{modeLabel}</p>
                     </div>
                   </div>
+                  {booking?.meetingLink &&
+                    booking.bookingStatus === "accepted" && (
+                      <div className="flex items-start gap-3">
+                        <SquareArrowOutUpRight className="mt-0.5 h-4 w-4 text-slate-400" />
+                        <div>
+                          <p className="font-medium text-slate-900">Meeting</p>
+
+                          <Link
+                            href={booking?.meetingLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="  inline-block font-medium text-blue-600 hover:underline break-all"
+                          >
+                            Join Meeting
+                          </Link>
+                        </div>{" "}
+                      </div>
+                    )}
                 </div>
               </div>
 
@@ -855,6 +863,7 @@ export default function MyBookingsPage() {
                   "You"
                 }
                 skillTitle={selectedProvidedSkill?.title || "Choose your skill"}
+                profileImage={false}
               />
               <ParticipantCard
                 title="Other Person"
@@ -872,6 +881,7 @@ export default function MyBookingsPage() {
                 skillTitle={
                   selectedRequestedSkill?.title || "Choose a requested skill"
                 }
+                profileImage={false}
               />
             </div>
           </div>

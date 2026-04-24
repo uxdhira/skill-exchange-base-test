@@ -121,13 +121,14 @@ export interface Booking {
 // This describes a review left after a skill session.
 export interface Review {
   id: string;
-  skillId: string;
-  skillTitle: string;
-  reviewerId: string;
-  reviewerName: string;
+  documentId?: string;
   rating: number;
   comment: string;
   createdAt: string;
+  fromUser?: Profile;
+  toUser?: Profile;
+  skill?: Skill;
+  booking?: Booking;
 }
 
 // This describes a skill request from a user.

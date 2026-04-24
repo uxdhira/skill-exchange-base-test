@@ -65,7 +65,7 @@ export async function GET(
 
     const { documentId } = await params;
     const { response, result } = await getBooking(documentId, token);
-    console.log("Booking fetch response:", response, result);
+    // console.log("Booking fetch response:", response, result);
     if (!response.ok) {
       return NextResponse.json(result, { status: response.status });
     }

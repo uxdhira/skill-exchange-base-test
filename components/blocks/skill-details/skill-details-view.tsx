@@ -5,7 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Skill } from "@/types";
+import { useReviewsBySkill } from "@/hooks/reviews";
+import { Skill, Review } from "@/types";
 import { ArrowLeft, Clock, Info, MapPin, Star, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -19,6 +20,7 @@ interface SkillDetailsProps {
   isOwner?: boolean;
   backUrl?: string;
   showSidebar?: boolean;
+  showReviews?: boolean;
 }
 
 export default function SkillDetailsView({
@@ -26,6 +28,7 @@ export default function SkillDetailsView({
   isOwner,
   backUrl,
   showSidebar = true,
+  showReviews = true,
 }: SkillDetailsProps) {
   const router = useRouter();
   const [showBookingModal, setShowBookingModal] = useState(false);
@@ -35,6 +38,11 @@ export default function SkillDetailsView({
     "Online" | "In-Person" | "Hybrid"
   >("Online");
   const [formData, setFormData] = useState({ preferredSchedule: "" });
+
+  const skillDocumentId = skill.documentId || skill.id;
+  const { data: reviews, isLoading: reviewsLoading } = useReviewsBySkill(
+    skillDocumentId,
+  );
 
   const categoryName =
     typeof skill.category === "string" ? skill.category : skill.category?.name || "Uncategorized";
@@ -77,6 +85,40 @@ export default function SkillDetailsView({
         image?.url;
 
   const providerBio = "Passionate skill provider eager to share knowledge!";
+
+  function formatDate(dateString?: string) {
+    if (!dateString) return "";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  }
+
+  function getInitials(name?: string) {
+    return (name || "User")
+      .split(" ")
+      .filter(Boolean)
+      .map((part) => part[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+  }
+
+  function getReviewerName(review: Review) {
+    const from = review.fromUser;
+    if (!from) return "Anonymous";
+    return [from.firstName, from.lastName].filter(Boolean).join(" ").trim() || "Anonymous";
+  }
+
+  function getReviewerAvatar(review: Review) {
+    const avatar = review.fromUser?.avatar;
+    if (avatar && typeof avatar === "object" && "url" in avatar) {
+      return avatar.url;
+    }
+    if (typeof avatar === "string") return avatar;
+    return "";
+  }
 
   if (!skill) return <p className="p-6">Skill not found</p>;
 
@@ -363,6 +405,68 @@ export default function SkillDetailsView({
             </div>
           </Card>
         </div>
+      )}
+
+      {showReviews && (
+        <Card>
+          <CardContent className="p-6">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
+              Reviews ({reviews?.length || 0})
+            </h2>
+
+            {reviewsLoading ? (
+              <p className="text-slate-500">Loading reviews...</p>
+            ) : reviews && reviews.length > 0 ? (
+              <div className="space-y-4">
+                {reviews.map((review) => (
+                  <div
+                    key={review.documentId || review.id}
+                    className="border-b border-slate-100 pb-4 last:border-0 last:pb-0"
+                  >
+                    <div className="flex items-start gap-3">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={getReviewerAvatar(review)} />
+                        <AvatarFallback>
+                          {getInitials(getReviewerName(review))}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <p className="font-medium">{getReviewerName(review)}</p>
+                          <div className="flex items-center gap-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <Star
+                                key={star}
+                                className={`h-4 w-4 ${
+                                  star <= (review.rating || 0)
+                                    ? "fill-yellow-400 text-yellow-400"
+                                    : "text-slate-200"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        {review.comment && (
+                          <p className="mt-2 text-sm text-slate-600">
+                            {review.comment}
+                          </p>
+                        )}
+                        <p className="mt-1 text-xs text-slate-400">
+                          {formatDate(review.createdAt)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-slate-500">
+                No reviews yet. Be the first to review this skill!
+              </p>
+            )}
+          </CardContent>
+        </Card>
       )}
     </div>
   );
