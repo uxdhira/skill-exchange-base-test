@@ -1,5 +1,6 @@
 "use client";
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,8 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useCurrentUser } from "@/hooks/auth";
 import { useCurrentProfile, useUpdateProfile } from "@/hooks/profile";
 import { useOwnerSkills } from "@/hooks/skill";
-import { Edit2, Mail, MapPin, Save, Star, User } from "lucide-react";
 import type { AvailabilitySlot } from "@/types";
+import { Edit, Edit2, Mail, MapPin, Save, Star, User } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -104,6 +105,8 @@ function WeeklySchedule({ data }: { data: Slot[] }) {
   );
 }
 export default function MyProfile() {
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
   const { data: user, isLoading, error } = useCurrentUser();
   const profileDocumentId = user?.profile?.documentId || "";
   const {
@@ -114,7 +117,6 @@ export default function MyProfile() {
   const updateProfile = useUpdateProfile();
   const ownerId = profileDocumentId;
   const { data: skillsData } = useOwnerSkills(ownerId);
-  console.log({ profile });
   // `useState` is used for local UI state like edit mode and form values.
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -147,39 +149,85 @@ export default function MyProfile() {
     .toUpperCase();
 
   // Save the form and leave edit mode.
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   if (!profileDocumentId) return;
+
+  //   const [firstName, ...rest] = formData.name.trim().split(" ");
+  //   const lastName = rest.join(" ");
+  //   const availability = availabilityForm
+  //     .filter((slot) => slot.enabled)
+  //     .map((slot) => ({
+  //       id: slot.id,
+  //       dayOfWeek: slot.dayOfWeek,
+  //       startTime: toApiTimeValue(slot.startTime),
+  //       endTime: toApiTimeValue(slot.endTime),
+  //     }));
+
+  //   try {
+  //     await updateProfile.mutateAsync({
+  //       documentId: profileDocumentId,
+  //       data: {
+  //         firstName: firstName || "",
+  //         lastName,
+  //         bio: formData.bio,
+  //         location: formData.location,
+  //         availability,
+  //       },
+  //     });
+  //     setIsEditing(false);
+  //     toast("Profile updated successfully", { position: "top-center" });
+  //   } catch {
+  //     toast("Failed to update profile", { position: "top-center" });
+  //   }
+  // };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profileDocumentId) return;
 
     const [firstName, ...rest] = formData.name.trim().split(" ");
     const lastName = rest.join(" ");
+
     const availability = availabilityForm
       .filter((slot) => slot.enabled)
       .map((slot) => ({
-        id: slot.id,
         dayOfWeek: slot.dayOfWeek,
         startTime: toApiTimeValue(slot.startTime),
         endTime: toApiTimeValue(slot.endTime),
       }));
 
     try {
-      await updateProfile.mutateAsync({
-        documentId: profileDocumentId,
-        data: {
+      const multipart = new FormData();
+
+      // ✅ ALWAYS stringify
+      multipart.append(
+        "data",
+        JSON.stringify({
           firstName: firstName || "",
           lastName,
           bio: formData.bio,
           location: formData.location,
           availability,
-        },
+        }),
+      );
+
+      // ✅ file (optional)
+      if (selectedImage) {
+        multipart.append("files.avatar", selectedImage);
+      }
+
+      await updateProfile.mutateAsync({
+        documentId: profileDocumentId,
+        formData: multipart,
       });
+
       setIsEditing(false);
       toast("Profile updated successfully", { position: "top-center" });
-    } catch {
+    } catch (err) {
+      console.error(err);
       toast("Failed to update profile", { position: "top-center" });
     }
   };
-
   // Update one field in the profile form.
   const handleChange = (field: string, value: string) => {
     setFormData({ ...formData, [field]: value });
@@ -241,7 +289,28 @@ export default function MyProfile() {
       </div>
     );
   }
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        toast("Please select an image file (PNG, JPG, JPEG)", {
+          position: "top-center",
+        });
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        toast("File size must be less than 10MB", { position: "top-center" });
+        return;
+      }
+      setSelectedImage(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
 
+  const removeImage = () => {
+    setSelectedImage(null);
+    setImagePreview("");
+  };
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -257,10 +326,33 @@ export default function MyProfile() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-6">
-            <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-              <span className="text-3xl font-bold text-blue-600">
-                {initials}
-              </span>
+            <div className="relative w-24 h-24">
+              {/* Avatar */}
+              <Avatar className="w-24 h-24">
+                <AvatarImage
+                  src={imagePreview || profile?.avatar?.url}
+                  alt="Profile avatar"
+                />
+                <AvatarFallback className="text-lg font-semibold">
+                  {initials || "U"}
+                </AvatarFallback>
+              </Avatar>
+
+              {/* Upload overlay */}
+              {isEditing && (
+                <label className="absolute inset-0 cursor-pointer group">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageChange}
+                  />
+
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center rounded-full">
+                    <Edit className="w-5 h-5 text-white" />
+                  </div>
+                </label>
+              )}
             </div>
             <div className="flex-1">
               <h2 className="text-2xl font-bold mb-1">{fullName}</h2>
@@ -332,7 +424,9 @@ export default function MyProfile() {
                       className="rounded-lg border p-3 space-y-3"
                     >
                       <div className="flex items-center justify-between gap-3">
-                        <span className="font-medium">{DAYS[slot.dayOfWeek]}</span>
+                        <span className="font-medium">
+                          {DAYS[slot.dayOfWeek]}
+                        </span>
                         <label className="flex items-center gap-2 text-sm text-muted-foreground">
                           <input
                             type="checkbox"

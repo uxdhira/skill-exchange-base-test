@@ -1,11 +1,13 @@
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useGlobalState } from "@/hooks/GlobalState";
+import { useReviewsBySkill } from "@/hooks/reviews";
+import { getRatingStats } from "@/lib/utility";
 import { Skill } from "@/types";
-import { Clock, Edit, MapPin, Monitor, Star, Trash2 } from "lucide-react";
+import { Edit, MapPin, Monitor, Star, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Button } from "./button";
-import { Card, CardContent, CardHeader, CardTitle } from "./card";
 
 // Props used by the reusable skill card.
 const SkillCard = ({
@@ -17,6 +19,9 @@ const SkillCard = ({
   isEditEnabled?: boolean;
   directUrl?: string;
 }) => {
+  const { data: reviews, isLoading: reviewsLoading } = useReviewsBySkill(
+    skill.documentId,
+  );
   const getCategoryName = () => {
     const cat = skill.category;
     return typeof cat === "string" ? cat : cat?.name || "Uncategorized";
@@ -32,7 +37,12 @@ const SkillCard = ({
       .join(" ")
       .trim();
 
-    return fullName || owner?.user?.username || (skill.userName as string) || "Unknown";
+    return (
+      fullName ||
+      owner?.user?.username ||
+      (skill.userName as string) ||
+      "Unknown"
+    );
   };
 
   const getImageUrl = () => {
@@ -61,7 +71,7 @@ const SkillCard = ({
   };
 
   const imageUrl = getImageUrl();
-
+  const review = !reviewsLoading && getRatingStats(reviews);
   return (
     <Card
       key={skill.id}
@@ -71,14 +81,14 @@ const SkillCard = ({
         <CardHeader className="p-0">
           <div className="overflow-hidden h-50 bg-slate-200 flex items-center justify-center text-slate-400 font-bold uppercase tracking-widest group-hover:bg-slate-300 transition-colors">
             {imageUrl ? (
-                <Image
-                  src={imageUrl}
-                  alt={skill.title}
-                  width={440}
-                  height={300}
-                  className="w-full h-full object-cover rounded-t-2xl group-hover:brightness-50 group-hover:scale-125 transition duration-300 delay-75"
-                  unoptimized
-                />
+              <Image
+                src={imageUrl}
+                alt={skill.title}
+                width={440}
+                height={300}
+                className="w-full h-full object-cover rounded-t-2xl group-hover:brightness-50 group-hover:scale-125 transition duration-300 delay-75"
+                unoptimized
+              />
             ) : (
               getCategoryName()
             )}
@@ -95,21 +105,19 @@ const SkillCard = ({
             {(skill.title as string) || "Untitled Skill"}
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4 px-4">
-          <div className="space-y-2 ">
-            <p className="text-sm text-gray-600 line-clamp-3">
+        <CardContent className="space-y-4 px-4 h-full">
+          <div className="flex flex-col space-y-2 justify-between">
+            <p className="text-sm text-gray-600 line-clamp-2 mb-auto">
               {(skill.description as string) || "No description available"}
             </p>
-            <div className="space-y-2 text-sm">
+            <div className="space-y-2 text-sm mt-auto">
               <div className="flex items-center justify-between">
-                <span className="text-gray-500">
-                  by {getOwnerName()}
-                </span>
+                <span className="text-gray-500">by {getOwnerName()}</span>
 
                 <div className="flex items-center gap-1">
                   <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                   <span className="font-medium">
-                    {(skill.userRating as number) || 0}
+                    {(review.average as number) || 0} ({review.total})
                   </span>
                 </div>
               </div>
@@ -117,16 +125,16 @@ const SkillCard = ({
               <div className="flex justify-between gap-8 text-gray-600">
                 <span className="flex items-center gap-1">
                   <Monitor className="w-4 h-4" />
-                    <span className="capitalize">
+                  <span className="capitalize">
                     {((skill.mode as string) || "online")
                       .replace("inperson", "in person")
                       .replace("_", " ")}
-                    </span>
+                  </span>
                 </span>
-                <span className="flex items-center gap-1">
+                {/* <span className="flex items-center gap-1">
                   <Clock className="w-4 h-4" />
                   <span>{(skill.duration as string) || "TBD"}</span>
-                </span>
+                </span> */}
               </div>
               <div className="flex items-center gap-2 text-gray-600">
                 <MapPin className="w-4 h-4" />

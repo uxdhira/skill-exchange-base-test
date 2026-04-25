@@ -24,29 +24,46 @@ async function fetchProfile(documentId: string): Promise<Profile> {
   return result.data;
 }
 
-async function updateProfile({
+// async function updateProfile({
+//   documentId,
+//   data,
+// }: {
+//   documentId: string;
+//   data: UpdateProfilePayload;
+// }): Promise<Profile> {
+//   const response = await fetch(`/api/profile/${documentId}`, {
+//     method: "PUT",
+//     headers: {
+//       "Content-Type": "application/json",
+//     },
+//     body: JSON.stringify({ data }),
+//   });
+
+//   if (!response.ok) {
+//     throw new Error("Failed to update profile");
+//   }
+
+//   const result = await response.json();
+//   return result.data;
+// }
+export async function updateProfile({
   documentId,
-  data,
+  formData,
 }: {
   documentId: string;
-  data: UpdateProfilePayload;
-}): Promise<Profile> {
-  const response = await fetch(`/api/profile/${documentId}`, {
+  formData: FormData;
+}) {
+  const res = await fetch(`/api/profile/${documentId}`, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ data }),
+    body: formData, // ❗ no headers
   });
 
-  if (!response.ok) {
+  if (!res.ok) {
     throw new Error("Failed to update profile");
   }
 
-  const result = await response.json();
-  return result.data;
+  return res.json();
 }
-
 export function useCurrentProfile(documentId: string) {
   return useQuery({
     queryKey: PROFILE_KEY(documentId),
@@ -56,18 +73,38 @@ export function useCurrentProfile(documentId: string) {
   });
 }
 
+// Update Profile
 export function useUpdateProfile() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: updateProfile,
+
     onSuccess: (_data, variables) => {
+      // Refetch updated profile
       queryClient.invalidateQueries({
         queryKey: PROFILE_KEY(variables.documentId),
       });
+
+      // Refetch logged-in user context
       queryClient.invalidateQueries({
         queryKey: ["auth", "user"],
       });
     },
   });
 }
+// export function useUpdateProfile() {
+//   const queryClient = useQueryClient();
+
+//   return useMutation({
+//     mutationFn: updateProfile,
+//     onSuccess: (_data, variables) => {
+//       queryClient.invalidateQueries({
+//         queryKey: PROFILE_KEY(variables.documentId),
+//       });
+//       queryClient.invalidateQueries({
+//         queryKey: ["auth", "user"],
+//       });
+//     },
+//   });
+// }

@@ -193,6 +193,7 @@ export default function BookingDetailPage() {
     comment: "",
   });
   const [accepterMessage, setAccepterMessage] = useState("");
+  const [meetingLink, setMeetingLink] = useState("");
 
   const perspective = useMemo(() => {
     if (!booking || !profileDocumentId) return null;
@@ -220,12 +221,15 @@ export default function BookingDetailPage() {
           ? { requesterMessage: accepterMessage }
           : { providerMessage: accepterMessage }
         : {};
-
+      const meetingField = meetingLink?.trim()
+        ? { meetingLink: meetingLink }
+        : {};
       await updateBooking.mutateAsync({
         documentId: booking?.documentId,
         data: {
           bookingStatus,
           ...messageField,
+          ...meetingField,
         },
       });
       toast.success(`Booking marked as ${bookingStatus}.`);
@@ -609,21 +613,20 @@ export default function BookingDetailPage() {
                   <h2 className="text-lg font-semibold">Messages</h2>
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
+                  {/* Requester always first */}
                   <div className="rounded-xl border border-slate-200 bg-white p-4">
                     <p className="text-sm font-medium text-slate-700">
-                      {amProvider
-                        ? booking.provider?.firstName || "You"
-                        : booking.requester?.firstName || "You"}
+                      {booking.requester?.firstName || "Requester"}
                     </p>
                     <p className="mt-2 text-sm leading-6 text-slate-600">
                       {booking.requesterMessage || "No requester message yet."}
                     </p>
                   </div>
+
+                  {/* Provider always second */}
                   <div className="rounded-xl border border-slate-200 bg-white p-4">
                     <p className="text-sm font-medium text-slate-700">
-                      {amProvider
-                        ? booking.requester?.firstName || "Requester"
-                        : booking.provider?.firstName || "Provider"}
+                      {booking.provider?.firstName || "Provider"}
                     </p>
                     <p className="mt-2 text-sm leading-6 text-slate-600">
                       {booking.providerMessage || "No provider message yet."}
@@ -718,6 +721,18 @@ export default function BookingDetailPage() {
             <CardContent className="space-y-3">
               {amProvider && booking.bookingStatus === "pending" && (
                 <>
+                  <div className="space-y-2">
+                    <Label htmlFor="accepter-message">Meeting Link</Label>
+                    <textarea
+                      id="meeting-link"
+                      className="w-full rounded-md border px-3 py-2 text-sm"
+                      value={meetingLink}
+                      onChange={(e) => setMeetingLink(e.target.value)}
+                      placeholder="Add meeting link ..."
+                      rows={4}
+                      required
+                    />
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="accepter-message">Message</Label>
                     <textarea

@@ -1,7 +1,7 @@
 "use client";
+import SkillCard from "@/components/shared/Card/SkillCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import SkillCard from "@/components/ui/skill-card";
 import { useCurrentUser } from "@/hooks/auth";
 import { useOwnerSkills } from "@/hooks/skill";
 import { Plus } from "lucide-react";

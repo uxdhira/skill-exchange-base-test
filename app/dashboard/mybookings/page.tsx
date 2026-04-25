@@ -188,10 +188,7 @@ export default function MyBookingsPage() {
   const { data: bookings = [], isLoading, error } = useBookings();
   const { data: ownerSkillsData, isLoading: ownerSkillsLoading } =
     useOwnerSkills(profileDocumentId);
-  const { data: allSkillsData, isLoading: allSkillsLoading } = useSkills(
-    1,
-    100,
-  );
+  const { data: allSkillsData, isLoading: allSkillsLoading } = useSkills(1, 9);
   const createBooking = useCreateBooking();
   const updateBooking = useUpdateBooking();
   const deleteBooking = useDeleteBooking();

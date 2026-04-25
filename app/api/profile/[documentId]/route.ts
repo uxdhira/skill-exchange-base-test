@@ -44,10 +44,11 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ documentId: string }> },
+  { params }: { params: { documentId: string } },
 ) {
   try {
     const { documentId } = await params;
+
     const cookieStore = await cookies();
     const token = cookieStore.get("strapi-jwt");
 
@@ -55,42 +56,96 @@ export async function PUT(
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    const body = await request.json();
-    const sanitizedAvailability = Array.isArray(body?.data?.availability)
-      ? body.data.availability.map(
-          (slot: {
-            dayOfWeek?: number;
-            startTime?: string;
-            endTime?: string;
-          }) => ({
-            dayOfWeek: slot.dayOfWeek,
-            startTime: slot.startTime,
-            endTime: slot.endTime,
-          }),
-        )
-      : body?.data?.availability;
+    const contentType = request.headers.get("content-type") || "";
 
-    const sanitizedBody = {
-      ...body,
-      data: {
-        ...body?.data,
-        availability: sanitizedAvailability,
-      },
-    };
+    let data: any = {};
+    let avatarFile: File | null = null;
 
+    // ✅ Handle multipart safely
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await request.formData();
+
+      const rawData = formData.get("data");
+
+      if (typeof rawData === "string") {
+        try {
+          data = JSON.parse(rawData);
+        } catch (err) {
+          console.error("Invalid JSON:", rawData);
+          return NextResponse.json(
+            { error: "Invalid data format" },
+            { status: 400 },
+          );
+        }
+      }
+
+      avatarFile = formData.get("files.avatar") as File | null;
+
+      // 🔍 Debug if needed
+      // console.log([...formData.entries()]);
+    } else {
+      // fallback JSON
+      const body = await request.json();
+      data = body?.data || {};
+    }
+
+    // ✅ sanitize availability
+    if (Array.isArray(data?.availability)) {
+      data.availability = data.availability.map((slot: any) => ({
+        dayOfWeek: slot.dayOfWeek,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+      }));
+    }
+
+    // ✅ Step 1: Upload avatar if exists
+    let uploadedFileId: number | null = null;
+
+    if (avatarFile) {
+      const uploadForm = new FormData();
+      uploadForm.append("files", avatarFile);
+
+      const uploadRes = await fetch(`${STRAPI_URL}/api/upload`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token.value}`,
+        },
+        body: uploadForm,
+      });
+
+      const uploaded = await uploadRes.json();
+
+      if (!uploadRes.ok) {
+        console.error("Upload failed:", uploaded);
+        return NextResponse.json(uploaded, { status: uploadRes.status });
+      }
+
+      uploadedFileId = Array.isArray(uploaded)
+        ? uploaded[0]?.id
+        : uploaded?.[0]?.id;
+    }
+
+    // ✅ Step 2: Attach avatar
+    if (uploadedFileId) {
+      data.avatar = uploadedFileId;
+    }
+
+    // ✅ Step 3: Update profile
     const response = await fetch(`${STRAPI_URL}/api/profiles/${documentId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token.value}`,
       },
-      body: JSON.stringify(sanitizedBody),
+      body: JSON.stringify({ data }),
     });
 
     const result = await response.json();
+
     if (!response.ok) {
-      console.error("Strapi profile update failed:", result);
+      console.error("Profile update failed:", result);
     }
+
     return NextResponse.json(result, { status: response.status });
   } catch (error) {
     console.error("Error updating profile:", error);

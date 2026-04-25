@@ -6,8 +6,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useReviewsBySkill } from "@/hooks/reviews";
-import { Skill, Review } from "@/types";
-import { ArrowLeft, Clock, Info, MapPin, Star, User } from "lucide-react";
+import { getRatingStats } from "@/lib/utility";
+import { Review, Skill } from "@/types";
+import { ArrowLeft, Info, MapPin, Star, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -40,12 +41,13 @@ export default function SkillDetailsView({
   const [formData, setFormData] = useState({ preferredSchedule: "" });
 
   const skillDocumentId = skill.documentId || skill.id;
-  const { data: reviews, isLoading: reviewsLoading } = useReviewsBySkill(
-    skillDocumentId,
-  );
+  const { data: reviews, isLoading: reviewsLoading } =
+    useReviewsBySkill(skillDocumentId);
 
   const categoryName =
-    typeof skill.category === "string" ? skill.category : skill.category?.name || "Uncategorized";
+    typeof skill.category === "string"
+      ? skill.category
+      : skill.category?.name || "Uncategorized";
 
   const owner = skill.owner;
   const providerName =
@@ -55,7 +57,6 @@ export default function SkillDetailsView({
     "Unknown";
 
   const providerLocation = owner?.location || skill.location || "Online";
-  const providerRating = skill.userRating || 0;
   const providerReviewCount = owner?.totalReviews || 0;
   const providerAvatar =
     owner?.avatar && typeof owner.avatar === "object" && "url" in owner.avatar
@@ -108,7 +109,10 @@ export default function SkillDetailsView({
   function getReviewerName(review: Review) {
     const from = review.fromUser;
     if (!from) return "Anonymous";
-    return [from.firstName, from.lastName].filter(Boolean).join(" ").trim() || "Anonymous";
+    return (
+      [from.firstName, from.lastName].filter(Boolean).join(" ").trim() ||
+      "Anonymous"
+    );
   }
 
   function getReviewerAvatar(review: Review) {
@@ -132,6 +136,7 @@ export default function SkillDetailsView({
     setSelectedDate("");
     setSelectedTime("");
   };
+  const review = !reviewsLoading && getRatingStats(reviews);
 
   return (
     <div className="max-w-6xl mx-auto p-4 space-y-6">
@@ -187,12 +192,12 @@ export default function SkillDetailsView({
                 </span>
                 <span className="flex items-center gap-1">
                   <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                  {providerRating}
+                  {(review?.average as number) || 0} ({review?.total})
                 </span>
-                <span className="flex items-center gap-1">
+                {/* <span className="flex items-center gap-1">
                   <Clock className="h-4 w-4" />
                   {skill.duration || "TBD"}
-                </span>
+                </span> */}
               </div>
 
               <div>
@@ -216,23 +221,25 @@ export default function SkillDetailsView({
                   <div className="space-y-1">
                     <p className="text-slate-500">Mode</p>
                     <p className="font-medium capitalize">
-                      {skill.mode.replace("inperson", "in person").replace("_", " ")}
+                      {skill.mode
+                        .replace("inperson", "in person")
+                        .replace("_", " ")}
                     </p>
                   </div>
-                  <div className="space-y-1">
+                  {/* <div className="space-y-1">
                     <p className="text-slate-500">Duration</p>
                     <p className="font-medium">{skill.duration || "TBD"}</p>
-                  </div>
+                  </div> */}
                   <div className="space-y-1">
                     <p className="text-slate-500">Location</p>
                     <p className="font-medium">{skill.location || "Online"}</p>
                   </div>
-                  <div className="space-y-1">
+                  {/* <div className="space-y-1">
                     <p className="text-slate-500">Availability</p>
                     <p className="font-medium">
                       {skill.availability || "Weekday evenings"}
                     </p>
-                  </div>
+                  </div> */}
                 </div>
               </div>
 
@@ -433,7 +440,9 @@ export default function SkillDetailsView({
                       </Avatar>
                       <div className="flex-1">
                         <div className="flex items-center justify-between">
-                          <p className="font-medium">{getReviewerName(review)}</p>
+                          <p className="font-medium">
+                            {getReviewerName(review)}
+                          </p>
                           <div className="flex items-center gap-1">
                             {[1, 2, 3, 4, 5].map((star) => (
                               <Star

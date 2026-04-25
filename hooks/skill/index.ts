@@ -4,7 +4,11 @@ import type { Skill } from "@/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const OWNER_SKILLS_KEY = (ownerId: string) => ["owner-skills", ownerId];
-const SKILLS_KEY = (page: number, pageSize: number) => ["skills", page, pageSize];
+const SKILLS_KEY = (page: number, pageSize: number) => [
+  "skills",
+  page,
+  pageSize,
+];
 
 export async function fetchSkills(page = 1, pageSize = 100) {
   const response = await fetch(`/api/skills?page=${page}&pageSize=${pageSize}`);
@@ -18,14 +22,51 @@ export async function fetchSkills(page = 1, pageSize = 100) {
   return { data: result.data, meta: result.meta };
 }
 
-export function useSkills(page = 1, pageSize = 100) {
-  return useQuery<{ data: Skill[]; meta: unknown }, Error>({
-    queryKey: SKILLS_KEY(page, pageSize),
-    queryFn: () => fetchSkills(page, pageSize),
-    staleTime: 1000 * 60 * 5,
+// export function useSkills(page = 1, pageSize = 100) {
+//   return useQuery<{ data: Skill[]; meta: unknown }, Error>({
+//     queryKey: SKILLS_KEY(page, pageSize),
+//     queryFn: () => fetchSkills(page, pageSize),
+//     staleTime: 1000 * 60 * 5,
+//   });
+// }
+export function useSkills(params: {
+  page: number;
+  pageSize: number;
+  search?: string;
+  category?: string;
+  location?: string;
+  sort: string;
+}) {
+  const query = new URLSearchParams();
+
+  query.set("page", String(params.page));
+  query.set("pageSize", String(params.pageSize));
+  query.set("sort", params.sort);
+
+  if (params.search) query.set("search", params.search);
+  if (params.category) query.set("category", params.category);
+  if (params.location) query.set("location", params.location);
+
+  return useQuery({
+    queryKey: [
+      "skills",
+      params.page,
+      params.pageSize,
+      params.search || "",
+      params.category || "",
+      params.location || "",
+      params.sort,
+    ],
+    queryFn: async ({ signal }) => {
+      const res = await fetch(`/api/skills?${query.toString()}`, {
+        signal,
+      });
+
+      return res.json();
+    },
+    keepPreviousData: true,
   });
 }
-
 export async function fetchOwnerSkills(ownerId: string) {
   const response = await fetch(`/api/skills/owner/${ownerId}`);
 

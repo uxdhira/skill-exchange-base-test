@@ -3,7 +3,6 @@ import {
   Briefcase,
   Calendar,
   LayoutDashboard,
-  Lightbulb,
   MessageSquare,
   Settings,
   User,
@@ -17,19 +16,19 @@ const AdminNavBox = ({ sheetClose = false }: { sheetClose: boolean }) => {
 
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { name: "My Profile", href: "/dashboard/profile", icon: User },
+    { name: "Profile", href: "/dashboard/profile", icon: User },
     {
-      name: "Offered Skills",
+      name: "Skills",
       href: "/dashboard/offered-skills",
       icon: Briefcase,
     },
-    {
-      name: "Requested Skills",
-      href: "/dashboard/requested-skills",
-      icon: Lightbulb,
-    },
-    { name: "Bookings", href: "/dashboard/bookings", icon: Calendar },
-    { name: "My Bookings", href: "/dashboard/mybookings", icon: Calendar },
+    // {
+    //   name: "Requested Skills",
+    //   href: "/dashboard/requested-skills",
+    //   icon: Lightbulb,
+    // },
+    // { name: "Bookings", href: "/dashboard/bookings", icon: Calendar },
+    { name: "Bookings", href: "/dashboard/mybookings", icon: Calendar },
     { name: "Reviews", href: "/dashboard/reviews", icon: MessageSquare },
     { name: "Settings", href: "/dashboard/settings", icon: Settings },
   ];

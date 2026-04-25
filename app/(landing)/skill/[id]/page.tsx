@@ -1,5 +1,5 @@
 import SkillDetailsView from "@/components/blocks/skill-details/skill-details-view";
-import { mockSkills } from "@/data/mockData";
+import { fetchSkillById } from "@/lib/backend/fetch-skills";
 import { Metadata } from "next";
 
 // The route receives the skill id from the URL.
@@ -18,31 +18,35 @@ export async function generateMetadata({
 }: PageProps): Promise<Metadata> {
   const { id } = await params;
 
-  const skill = mockSkills.find((s) => s.id.toString() === id.toString());
+  // Use the SAME data source as the page
+  const skill = await fetchSkillById(id);
 
   if (!skill) {
     return {
-      title: "Skill Not Found",
+      title: "Skill Not Found - SkillSpill",
       description: "The requested skill does not exist.",
     };
   }
 
   return {
     title: `${skill.title} - SkillSpill`,
-    description: skill.description,
+    description: skill.description || "Explore this skill on SkillSpill",
   };
 }
-
 // Find the skill by id and render its full details page.
 // `params.id` comes from the dynamic route in the URL. The URL contains an ID,
 // and Next.js turns that ID into a param that we can use in the page to display specific content
 export default async function SkillDetailsPage({ params }: PageProps) {
   const { id } = await params;
-  const skill = mockSkills.find((s) => s.id.toString() === id.toString());
+  const skill = await fetchSkillById(id);
+  // console.log({ skillsData });
+  // const skill = mockSkills.find((s) => s.id.toString() === id.toString());
 
   if (!skill) {
     return <p className="p-6">Skill not found</p>;
   }
 
-  return <SkillDetailsView skill={skill} backUrl="/browse" showSidebar={false} />;
+  return (
+    <SkillDetailsView skill={skill} backUrl="/browse" showSidebar={false} />
+  );
 }

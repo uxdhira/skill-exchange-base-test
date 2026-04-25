@@ -1,6 +1,6 @@
 "use client";
 
-import SkillCard from "@/components/ui/skill-card";
+import SkillCard from "@/components/shared/Card/SkillCard";
 import { useCurrentUser } from "@/hooks/auth";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -90,12 +90,11 @@ export default function SkillCategories({
         {/* SKILLS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredSkills.map((skill) => (
-            <div
-              key={skill.id}
-              className="bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-lg transition-all hover:-translate-y-1"
-            >
-              <SkillCard skill={skill} directUrl={`/skill/${skill.id}`} />
-            </div>
+            <SkillCard
+              skill={skill}
+              key={skill.documentId}
+              directUrl={`/skill/${skill.documentId}`}
+            />
           ))}
         </div>
 
