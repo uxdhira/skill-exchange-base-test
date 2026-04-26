@@ -29,18 +29,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import ParticipantCard from "@/components/ui/card/ParticipantCard";
+import RejectionReasonDialog from "@/components/ui/dialog/RejectionReasonDialog";
+import ReportIssueDialog from "@/components/ui/dialog/ReportIssueDialog";
+import RescheduleDialog from "@/components/ui/dialog/RescheduleDialog";
+import ReviewDialog from "@/components/ui/dialog/ReviewDialog";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
+import LoadingSkeleton from "@/components/ui/skeleton/LoadingSkeleton";
 import { useCurrentUser } from "@/hooks/auth";
 import {
   useBooking,
@@ -49,116 +45,13 @@ import {
 } from "@/hooks/bookings";
 import { useCreateReport } from "@/hooks/reports";
 import { useCreateReview, useReviewsByBooking } from "@/hooks/reviews";
-
-function formatDateTime(value?: string | null) {
-  if (!value) return "To be confirmed";
-
-  return new Date(value).toLocaleString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
-
-function formatDuration(minutes?: number | null) {
-  if (!minutes) return "Duration not set";
-  if (minutes < 60) return `${minutes} min`;
-
-  const hours = Math.floor(minutes / 60);
-  const remaining = minutes % 60;
-  return remaining ? `${hours} hr ${remaining} min` : `${hours} hr`;
-}
-
-function formatMode(mode?: string | null) {
-  if (mode === "inperson" || mode === "in_person") return "In person";
-  if (mode === "hybrid") return "Hybrid";
-  if (mode === "online") return "Online";
-  return "To be confirmed";
-}
-
-function formatStatus(status) {
-  if (status === "completed" || status === "complete") return "Completed";
-  if (status === "cancelled") return "Cancelled";
-  if (status === "pending") return "Pending";
-  if (status === "accepted") return "Accepted";
-  if (status === "rejected") return "Rejected";
-
-  return status;
-}
-function getStatusClasses(status) {
-  switch (status) {
-    case "pending":
-      return "bg-amber-50 text-amber-700 border-amber-200";
-    case "accepted":
-      return "bg-emerald-50 text-emerald-700 border-emerald-200";
-    case "completed":
-    case "complete":
-      return "bg-sky-50 text-sky-700 border-sky-200";
-    case "rejected":
-      return "bg-rose-50 text-rose-700 border-rose-200";
-    case "cancelled":
-      return "bg-slate-100 text-slate-700 border-slate-200";
-    default:
-      return "bg-slate-100 text-slate-700 border-slate-200";
-  }
-}
-
-function getInitials(name?: string) {
-  return (name || "User")
-    .split(" ")
-    .filter(Boolean)
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
-
-function ParticipantCard({
-  title,
-  role,
-  name,
-  skillTitle,
-  profileImage,
-}: {
-  title: string;
-  role: "Provider" | "Requester";
-  name: string;
-  skillTitle: string;
-  profileImage: any;
-}) {
-  return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-      <div className="flex items-center gap-3">
-        <Avatar className="h-11 w-11 ring-1 ring-slate-200">
-          <AvatarImage src={profileImage?.url} />
-          <AvatarFallback>{name}</AvatarFallback>
-        </Avatar>
-        <div>
-          <p className="text-xs uppercase tracking-wide text-slate-500">
-            {title}
-          </p>
-          <p className="font-medium text-slate-900">{name}</p>
-        </div>
-      </div>
-
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        <div className="rounded-lg bg-white p-3 ring-1 ring-slate-200">
-          <p className="text-xs uppercase tracking-wide text-slate-500">Role</p>
-          <p className="mt-1 font-medium text-slate-900">{role}</p>
-        </div>
-        <div className="rounded-lg bg-white p-3 ring-1 ring-slate-200">
-          <p className="text-xs uppercase tracking-wide text-slate-500">
-            Skill
-          </p>
-          <p className="mt-1 font-medium text-slate-900">{skillTitle}</p>
-        </div>
-      </div>
-    </div>
-  );
-}
+import {
+  formatDateTime,
+  formatDuration,
+  formatMode,
+  formatStatus,
+  getStatusClasses,
+} from "@/lib/utility";
 
 export default function BookingDetailPage() {
   const searchParams = useSearchParams();
@@ -370,7 +263,8 @@ export default function BookingDetailPage() {
             Back to My Bookings
           </Button>
         </Link>
-        <p className="text-slate-600">Loading booking details...</p>
+
+        <LoadingSkeleton />
       </div>
     );
   }
@@ -435,7 +329,6 @@ export default function BookingDetailPage() {
   const canDelete =
     booking.bookingStatus === "rejected" ||
     booking.bookingStatus === "cancelled";
-  console.log({ booking, reviews });
   return (
     <div className="space-y-6">
       <Link href="/dashboard/mybookings">
@@ -480,7 +373,7 @@ export default function BookingDetailPage() {
                 <div className="rounded-xl border bg-white px-4 py-3 text-sm shadow-sm">
                   <p className="text-slate-500">Scheduled</p>
                   <p className="font-medium text-slate-900">
-                    {formatDateTime(booking.scheduledAt)}
+                    {formatDateTime(booking.scheduledAt, "long")}
                   </p>
                 </div>
               </div>
@@ -554,7 +447,7 @@ export default function BookingDetailPage() {
                   <div className="rounded-xl border border-slate-200 p-4">
                     <p className="text-sm text-slate-500">When</p>
                     <p className="mt-1 font-medium text-slate-900">
-                      {formatDateTime(booking.scheduledAt)}
+                      {formatDateTime(booking.scheduledAt, "short")}
                     </p>
                   </div>
                   <div className="rounded-xl border border-slate-200 p-4">
@@ -642,7 +535,9 @@ export default function BookingDetailPage() {
                   </h2>
 
                   {reviewsLoading ? (
-                    <p className="text-slate-500">Loading reviews...</p>
+                    <>
+                      <LoadingSkeleton />
+                    </>
                   ) : reviews?.length ? (
                     <div className="space-y-4">
                       {reviews.map((review) => {
@@ -690,7 +585,7 @@ export default function BookingDetailPage() {
                                 )}
 
                                 <p className="mt-1 text-xs text-slate-400">
-                                  {formatDateTime(review.createdAt)}
+                                  {formatDateTime(review.createdAt, "long")}
                                 </p>
                               </div>
                             </div>
@@ -874,8 +769,15 @@ export default function BookingDetailPage() {
           </Card>
         </div>
       </div>
+      <RescheduleDialog
+        isRescheduleOpen={isRescheduleOpen}
+        setIsRescheduleOpen={setIsRescheduleOpen}
+        setRescheduleData={setRescheduleData}
+        rescheduleData={rescheduleData}
+        handleReschedule={handleReschedule}
+      />
 
-      <Dialog open={isRescheduleOpen} onOpenChange={setIsRescheduleOpen}>
+      {/* <Dialog open={isRescheduleOpen} onOpenChange={setIsRescheduleOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Request Reschedule</DialogTitle>
@@ -932,9 +834,15 @@ export default function BookingDetailPage() {
             </DialogFooter>
           </form>
         </DialogContent>
-      </Dialog>
-
-      <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
+      </Dialog> */}
+      <ReviewDialog
+        isReviewOpen={isReviewOpen}
+        setIsReviewOpen={setIsReviewOpen}
+        handleReviewSubmit={handleReviewSubmit}
+        setReviewData={setReviewData}
+        reviewData={reviewData}
+      />
+      {/* <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Write a Review</DialogTitle>
@@ -998,9 +906,17 @@ export default function BookingDetailPage() {
             </DialogFooter>
           </form>
         </DialogContent>
-      </Dialog>
-
-      <Dialog open={isReportOpen} onOpenChange={setIsReportOpen}>
+      </Dialog> */}
+      <ReportIssueDialog
+        isReportOpen={isReportOpen}
+        setIsReportOpen={setIsReportOpen}
+        reportReason={reportReason}
+        setReportReason={setReportReason}
+        reportDetails={reportDetails}
+        setReportDetails={setReportDetails}
+        handleReportSubmit={handleReportSubmit}
+      />
+      {/* <Dialog open={isReportOpen} onOpenChange={setIsReportOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Report Issue</DialogTitle>
@@ -1056,9 +972,13 @@ export default function BookingDetailPage() {
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
-
-      <Dialog open={isReasonOpen} onOpenChange={setIsReasonOpen}>
+      </Dialog> */}
+      <RejectionReasonDialog
+        isReasonOpen={isReasonOpen}
+        setIsReasonOpen={setIsReasonOpen}
+        booking={booking}
+      />
+      {/* <Dialog open={isReasonOpen} onOpenChange={setIsReasonOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Rejection Reason</DialogTitle>
@@ -1081,7 +1001,7 @@ export default function BookingDetailPage() {
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
     </div>
   );
 }

@@ -22,11 +22,17 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
+import {
+  useChangePassword,
+  useCurrentUser,
+  useDeactivateAccount,
+} from "@/hooks/auth";
+import { formatDateTime } from "@/lib/utility";
 import { useState } from "react";
 import { toast } from "sonner";
 
 export default function Settings() {
+  const { data: user } = useCurrentUser();
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
@@ -51,6 +57,8 @@ export default function Settings() {
     showRequestedSkills: true,
     allowMessages: true,
   });
+  const { mutate, isPending } = useChangePassword();
+  const { mutate: mutateDeactivate } = useDeactivateAccount();
 
   const handlePasswordChange = (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,13 +73,32 @@ export default function Settings() {
       return;
     }
 
-    toast.success("Password updated successfully");
-    setPasswordData({
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
+    mutate({
+      currentPassword: passwordData.currentPassword,
+      password: passwordData.newPassword,
+      passwordConfirmation: passwordData.newPassword,
     });
   };
+  // const handlePasswordChange = (e: React.FormEvent) => {
+  //   e.preventDefault();
+
+  //   if (passwordData.newPassword !== passwordData.confirmPassword) {
+  //     toast.error("New passwords do not match");
+  //     return;
+  //   }
+
+  //   if (passwordData.newPassword.length < 8) {
+  //     toast.error("Password must be at least 8 characters");
+  //     return;
+  //   }
+
+  //   toast.success("Password updated successfully");
+  //   setPasswordData({
+  //     currentPassword: "",
+  //     newPassword: "",
+  //     confirmPassword: "",
+  //   });
+  // };
 
   const handleNotificationUpdate = () => {
     toast.success("Notification preferences updated");
@@ -82,6 +109,7 @@ export default function Settings() {
   };
 
   const handleDeactivate = () => {
+    mutateDeactivate();
     toast.success(
       "Account deactivated. You can reactivate by logging in again.",
     );
@@ -112,6 +140,30 @@ export default function Settings() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
+                <p className="font-semibold">Email</p>
+
+                <p>{user?.email}</p>
+                <p className="text-xs text-muted-foreground">
+                  Contact support to change your email
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <p className="font-semibold">Member Since</p>
+
+                <p>{formatDateTime(user?.createdAt)}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        {/* <Card>
+          <CardHeader>
+            <CardTitle>Account Information</CardTitle>
+            <CardDescription>Update your account details</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
                 <Label>Email</Label>
                 <Input type="email" defaultValue="john.doe@example.com" />
                 <p className="text-xs text-muted-foreground">
@@ -124,7 +176,7 @@ export default function Settings() {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
 
         {/* Password */}
         <Card>
@@ -190,7 +242,7 @@ export default function Settings() {
         </Card>
 
         {/* Notification Preferences */}
-        <Card>
+        {/* <Card>
           <CardHeader>
             <CardTitle>Notification Preferences</CardTitle>
             <CardDescription>
@@ -320,10 +372,10 @@ export default function Settings() {
 
             <Button onClick={handleNotificationUpdate}>Save Preferences</Button>
           </CardContent>
-        </Card>
+        </Card> */}
 
         {/* Privacy Settings */}
-        <Card>
+        {/* <Card>
           <CardHeader>
             <CardTitle>Privacy Settings</CardTitle>
             <CardDescription>
@@ -413,7 +465,7 @@ export default function Settings() {
 
             <Button onClick={handlePrivacyUpdate}>Save Settings</Button>
           </CardContent>
-        </Card>
+        </Card> */}
 
         {/* Danger Zone */}
         <Card className="border-red-200">

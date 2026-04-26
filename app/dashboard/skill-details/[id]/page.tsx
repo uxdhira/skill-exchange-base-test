@@ -16,7 +16,9 @@ async function getSkillByDocumentId(id: string) {
   try {
     const response = await fetchFromStrapi<
       StrapiResponse<Skill & Record<string, unknown>>
-    >(`/api/skills/${id}?populate[image]=*&populate[owner]=*&populate[category]=*`);
+    >(
+      `/api/skills/${id}?populate[image]=*&populate[owner]=*&populate[category]=*`,
+    );
 
     return response.data;
   } catch {
@@ -58,8 +60,8 @@ export default async function SkillDetailsPage({ params }: PageProps) {
   return (
     <SkillDetailsView
       skill={skill}
-      backUrl="/dashboard/offered-skills"
-      isOwner={true}
+      backUrl="/dashboard/myskills"
+      isOwner={false}
     />
   );
 }

@@ -2,8 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import {
-    NavigationMenu,
-    NavigationMenuList,
+  NavigationMenu,
+  NavigationMenuList,
 } from "@/components/ui/navigation-menu";
 import { useGlobalState } from "@/hooks/GlobalState";
 import { LogOut, PlusCircle, Zap } from "lucide-react";
@@ -11,26 +11,26 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import {
-    Sheet,
-    SheetClose,
-    SheetContent,
-    SheetTitle,
-    SheetTrigger,
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
 } from "../sheet";
 
 import { Icon } from "@iconify/react";
 import {
-    Briefcase,
-    Calendar,
-    LayoutDashboard,
-    Lightbulb,
-    MessageSquare,
-    Settings,
-    User,
+  Briefcase,
+  Calendar,
+  LayoutDashboard,
+  Lightbulb,
+  MessageSquare,
+  Settings,
+  User,
 } from "lucide-react";
 import { CgClose } from "react-icons/cg";
-import AdminNavBox from "./admin-nav";
-import UserProfileBox from "./user-profile";
+import AdminNavBox from "./UserSidebar/AdminNav";
+import UserProfileBox from "./UserSidebar/UserProfileBox";
 
 // `use client` is required because this dashboard navbar uses hooks and click events.
 
@@ -64,8 +64,12 @@ export default function Navbar() {
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "My Profile", href: "/dashboard/profile", icon: User },
-    { name: "My Skills", href: "/dashboard/offered-skills", icon: Briefcase },
-    { name: "Requested Skills", href: "/dashboard/requested-skills", icon: Lightbulb },
+    { name: "My Skills", href: "/dashboard/myskills", icon: Briefcase },
+    {
+      name: "Requested Skills",
+      href: "/dashboard/requested-skills",
+      icon: Lightbulb,
+    },
     { name: "Bookings", href: "/dashboard/bookings", icon: Calendar },
     { name: "Reviews", href: "/dashboard/reviews", icon: MessageSquare },
     { name: "Settings", href: "/dashboard/settings", icon: Settings },

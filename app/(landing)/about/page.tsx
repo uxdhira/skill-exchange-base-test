@@ -1,8 +1,6 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Award, Heart, Target, Users } from "lucide-react";
-import Link from "next/link";
 
 export default function About() {
   return (
@@ -147,7 +145,7 @@ export default function About() {
           </section>
 
           {/* CTA */}
-          <section className="bg-blue-50 rounded-lg p-8 text-center">
+          {/* <section className="bg-blue-50 rounded-lg p-8 text-center">
             <h2 className="text-2xl font-bold text-center mb-8 text-slate-900">
               Join Our Community
             </h2>
@@ -163,7 +161,7 @@ export default function About() {
                 <Link href="/browse">Browse Skills</Link>
               </Button>
             </div>
-          </section>
+          </section> */}
         </div>
       </div>
     </>

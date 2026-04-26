@@ -1,14 +1,19 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { StatsCard } from "@/components/ui/profile/StatsCard";
+import WeeklySchedule from "@/components/ui/profile/WeeklySchedule";
+import LoadingSkeleton from "@/components/ui/skeleton/LoadingSkeleton";
 import { Textarea } from "@/components/ui/textarea";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 import { useCurrentUser } from "@/hooks/auth";
 import { useCurrentProfile, useUpdateProfile } from "@/hooks/profile";
+import { useUserReviewsStats } from "@/hooks/reviews";
 import { useOwnerSkills } from "@/hooks/skill";
+import { DAYS } from "@/lib/utility";
 import type { AvailabilitySlot } from "@/types";
 import { Edit, Edit2, Mail, MapPin, Save, Star, User } from "lucide-react";
 import { useState } from "react";
@@ -21,26 +26,6 @@ import { toast } from "sonner";
  */
 
 type Slot = AvailabilitySlot;
-
-const DAYS = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-];
-
-function formatTime(time: string) {
-  const [hourStr, minute] = time.split(":");
-  let hour = parseInt(hourStr, 10);
-
-  const ampm = hour >= 12 ? "PM" : "AM";
-  hour = hour % 12 || 12;
-
-  return `${hour}:${minute} ${ampm}`;
-}
 
 function toTimeInputValue(time: string) {
   return time.slice(0, 5);
@@ -64,46 +49,6 @@ function buildAvailabilityForm(slots?: Slot[] | null) {
   });
 }
 
-function WeeklySchedule({ data }: { data: Slot[] }) {
-  const map = new Map<number, Slot>();
-
-  data.forEach((item) => {
-    map.set(item.dayOfWeek, item);
-  });
-
-  return (
-    <Card className="w-full ">
-      <CardHeader>
-        <CardTitle>Weekly Availability</CardTitle>
-      </CardHeader>
-
-      <CardContent className="space-y-3">
-        {DAYS.map((day, index) => {
-          const slot = map.get(index);
-
-          return (
-            <div
-              key={day}
-              className="flex items-center justify-between rounded-lg border p-3"
-            >
-              <span className="font-medium">{day}</span>
-
-              {slot ? (
-                <span className="text-sm text-muted-foreground">
-                  {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
-                </span>
-              ) : (
-                <span className="text-sm text-muted-foreground italic">
-                  Unavailable
-                </span>
-              )}
-            </div>
-          );
-        })}
-      </CardContent>
-    </Card>
-  );
-}
 export default function MyProfile() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
@@ -117,6 +62,14 @@ export default function MyProfile() {
   const updateProfile = useUpdateProfile();
   const ownerId = profileDocumentId;
   const { data: skillsData } = useOwnerSkills(ownerId);
+  const { data: reviewsData = [], isLoading: reviewsLoading } =
+    useUserReviewsStats(profileDocumentId);
+
+  const reviews = reviewsData?.reviews ?? [];
+
+  const averageRating = Number(reviewsData?.averageRating || 0);
+
+  const totalReviews = reviews?.length;
   // `useState` is used for local UI state like edit mode and form values.
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -133,54 +86,13 @@ export default function MyProfile() {
     [profile?.firstName, profile?.lastName].filter(Boolean).join(" ").trim() ||
     user?.username ||
     "User";
-  const reviewCount = profile?.totalReviews ?? 0;
-  const rating = profile?.rating ?? 0;
+
   const skillsOffered = skillsData?.data?.length ?? 0;
   const exchangesCompleted = profile?.exchangeCompleted ?? 0;
   const displayEmail = user?.email || "";
   const displayLocation = profile?.location || "";
   const displayBio = profile?.bio || "";
-  const initials = fullName
-    .split(" ")
-    .filter(Boolean)
-    .map((name) => name[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
 
-  // Save the form and leave edit mode.
-  // const handleSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   if (!profileDocumentId) return;
-
-  //   const [firstName, ...rest] = formData.name.trim().split(" ");
-  //   const lastName = rest.join(" ");
-  //   const availability = availabilityForm
-  //     .filter((slot) => slot.enabled)
-  //     .map((slot) => ({
-  //       id: slot.id,
-  //       dayOfWeek: slot.dayOfWeek,
-  //       startTime: toApiTimeValue(slot.startTime),
-  //       endTime: toApiTimeValue(slot.endTime),
-  //     }));
-
-  //   try {
-  //     await updateProfile.mutateAsync({
-  //       documentId: profileDocumentId,
-  //       data: {
-  //         firstName: firstName || "",
-  //         lastName,
-  //         bio: formData.bio,
-  //         location: formData.location,
-  //         availability,
-  //       },
-  //     });
-  //     setIsEditing(false);
-  //     toast("Profile updated successfully", { position: "top-center" });
-  //   } catch {
-  //     toast("Failed to update profile", { position: "top-center" });
-  //   }
-  // };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profileDocumentId) return;
@@ -240,7 +152,7 @@ export default function MyProfile() {
       location: displayLocation,
       bio: displayBio,
     });
-    setAvailabilityForm(buildAvailabilityForm(profile.availability));
+    setAvailabilityForm(buildAvailabilityForm(profile?.availability));
     setIsEditing(true);
   };
 
@@ -266,14 +178,9 @@ export default function MyProfile() {
 
   if (isLoading || profileLoading) {
     return (
-      <div className="space-y-6">
-        <h1 className="text-3xl font-bold">My Profile</h1>
-        <Card>
-          <CardContent className="py-12 text-center text-gray-600">
-            Loading profile...
-          </CardContent>
-        </Card>
-      </div>
+      <>
+        <LoadingSkeleton />
+      </>
     );
   }
 
@@ -328,16 +235,15 @@ export default function MyProfile() {
           <div className="flex items-center gap-6">
             <div className="relative w-24 h-24">
               {/* Avatar */}
-              <Avatar className="w-24 h-24">
-                <AvatarImage
-                  src={imagePreview || profile?.avatar?.url}
-                  alt="Profile avatar"
-                />
-                <AvatarFallback className="text-lg font-semibold">
-                  {initials || "U"}
-                </AvatarFallback>
-              </Avatar>
 
+              <UserAvatar
+                firstName={user?.profile?.firstName}
+                lastName={user?.profile?.lastName}
+                avatar={
+                  imagePreview ? { url: imagePreview } : user?.profile?.avatar
+                }
+                size="lg"
+              />
               {/* Upload overlay */}
               {isEditing && (
                 <label className="absolute inset-0 cursor-pointer group">
@@ -358,8 +264,8 @@ export default function MyProfile() {
               <h2 className="text-2xl font-bold mb-1">{fullName}</h2>
               <div className="flex items-center gap-1 text-lg">
                 <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                <span className="font-medium">{rating}</span>
-                <span className="text-gray-500">({reviewCount} reviews)</span>
+                <span className="font-medium">{averageRating}</span>
+                <span className="text-gray-500">({totalReviews} reviews)</span>
               </div>
             </div>
           </div>
@@ -536,33 +442,31 @@ export default function MyProfile() {
       </Card>
       {profile.availability && <WeeklySchedule data={profile.availability} />}
       {/* Stats Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Activity Stats</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="text-center p-4 bg-blue-50 rounded-lg">
-              <p className="text-3xl font-bold text-blue-600">
-                {skillsOffered}
-              </p>
-              <p className="text-sm text-gray-600 mt-1">Skills Offered</p>
-            </div>
-            <div className="text-center p-4 bg-green-50 rounded-lg">
-              <p className="text-3xl font-bold text-green-600">
-                {exchangesCompleted}
-              </p>
-              <p className="text-sm text-gray-600 mt-1">Exchanges Completed</p>
-            </div>
-            <div className="text-center p-4 bg-purple-50 rounded-lg">
-              <p className="text-3xl font-bold text-purple-600">
-                {reviewCount}
-              </p>
-              <p className="text-sm text-gray-600 mt-1">Total Reviews</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+
+      <StatsCard
+        stats={[
+          {
+            label: "Skills Offered",
+            value: skillsOffered,
+            color: "blue",
+          },
+          {
+            label: "Exchanges Completed",
+            value: exchangesCompleted,
+            color: "green",
+          },
+          {
+            label: "Total Reviews",
+            value: totalReviews,
+            color: "purple",
+          },
+          {
+            label: "Overall Rating",
+            value: averageRating, // replace with actual rating
+            color: "purple",
+          },
+        ]}
+      />
     </div>
   );
 }

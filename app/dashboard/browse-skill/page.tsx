@@ -8,7 +8,7 @@ export default async function BrowseSkills() {
 
   return (
     <>
-      <RenderSkills />
+      <RenderSkills urlPrefix={"dashboard/skill-details"} />
     </>
   );
 }

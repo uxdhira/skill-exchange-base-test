@@ -139,11 +139,13 @@ export default function SubmitSkillPage() {
           formData: multipart,
           ownerId,
         });
+        setIsLoading(false);
       } else {
         await createSkill.mutateAsync({
           formData: multipart,
           ownerId,
         });
+        setIsLoading(false);
       }
 
       // 7. UX feedback
@@ -155,7 +157,7 @@ export default function SubmitSkillPage() {
       );
 
       // 8. Redirect
-      router.push("/dashboard/offered-skills");
+      router.push("/dashboard/myskills");
     } catch (error: any) {
       console.error("Error saving skill:", error);
 

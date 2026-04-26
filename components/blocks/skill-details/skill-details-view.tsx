@@ -1,20 +1,20 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useReviewsBySkill } from "@/hooks/reviews";
-import { getRatingStats } from "@/lib/utility";
-import { Review, Skill } from "@/types";
+import LoadingSkeleton from "@/components/ui/skeleton/LoadingSkeleton";
+import { UserAvatar } from "@/components/ui/UserAvatar";
+import { useCurrentUser } from "@/hooks/auth";
+import { useReviewsBySkill, useUserReviewsStats } from "@/hooks/reviews";
+import { formatDateTime, getRatingStats, getReviewerName } from "@/lib/utility";
+import { Skill } from "@/types";
 import { ArrowLeft, Info, MapPin, Star, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { toast } from "sonner";
 import { Button } from "../../ui/button";
+import CreateBookingDialogBox from "../booking/CreateBookingBox";
 
 interface SkillDetailsProps {
   skill: Skill;
@@ -33,23 +33,26 @@ export default function SkillDetailsView({
 }: SkillDetailsProps) {
   const router = useRouter();
   const [showBookingModal, setShowBookingModal] = useState(false);
-  const [selectedDate, setSelectedDate] = useState("");
-  const [selectedTime, setSelectedTime] = useState("");
-  const [bookingType, setBookingType] = useState<
-    "Online" | "In-Person" | "Hybrid"
-  >("Online");
-  const [formData, setFormData] = useState({ preferredSchedule: "" });
 
+  const owner = skill.owner;
+
+  const {
+    data: user,
+    isLoading: userLoading,
+    error: userError,
+  } = useCurrentUser();
+  const { data: reviewsData = [], isLoading: reviewsLoading } =
+    useUserReviewsStats(owner?.documentId);
+  const averageRating = Number(reviewsData?.averageRating || 0);
+  const totalReviews = reviewsData?.reviews?.length;
   const skillDocumentId = skill.documentId || skill.id;
-  const { data: reviews, isLoading: reviewsLoading } =
-    useReviewsBySkill(skillDocumentId);
+  const { data: reviews } = useReviewsBySkill(skillDocumentId);
 
   const categoryName =
     typeof skill.category === "string"
       ? skill.category
       : skill.category?.name || "Uncategorized";
 
-  const owner = skill.owner;
   const providerName =
     [owner?.firstName, owner?.lastName].filter(Boolean).join(" ").trim() ||
     owner?.user?.username ||
@@ -57,13 +60,6 @@ export default function SkillDetailsView({
     "Unknown";
 
   const providerLocation = owner?.location || skill.location || "Online";
-  const providerReviewCount = owner?.totalReviews || 0;
-  const providerAvatar =
-    owner?.avatar && typeof owner.avatar === "object" && "url" in owner.avatar
-      ? owner.avatar.url
-      : typeof owner?.avatar === "string"
-        ? owner.avatar
-        : "/profile.jpg";
 
   const image = skill.image as
     | string
@@ -87,56 +83,10 @@ export default function SkillDetailsView({
 
   const providerBio = "Passionate skill provider eager to share knowledge!";
 
-  function formatDate(dateString?: string) {
-    if (!dateString) return "";
-    return new Date(dateString).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  }
-
-  function getInitials(name?: string) {
-    return (name || "User")
-      .split(" ")
-      .filter(Boolean)
-      .map((part) => part[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase();
-  }
-
-  function getReviewerName(review: Review) {
-    const from = review.fromUser;
-    if (!from) return "Anonymous";
-    return (
-      [from.firstName, from.lastName].filter(Boolean).join(" ").trim() ||
-      "Anonymous"
-    );
-  }
-
-  function getReviewerAvatar(review: Review) {
-    const avatar = review.fromUser?.avatar;
-    if (avatar && typeof avatar === "object" && "url" in avatar) {
-      return avatar.url;
-    }
-    if (typeof avatar === "string") return avatar;
-    return "";
-  }
-
   if (!skill) return <p className="p-6">Skill not found</p>;
 
-  const handleBooking = () => {
-    if (!selectedDate || !selectedTime) {
-      toast.error("Please select date and time");
-      return;
-    }
-    toast.success("Booking request sent successfully!");
-    setShowBookingModal(false);
-    setSelectedDate("");
-    setSelectedTime("");
-  };
   const review = !reviewsLoading && getRatingStats(reviews);
+  const isCurrentOwner = user?.profile?.documentId === skill.owner?.documentId;
 
   return (
     <div className="max-w-6xl mx-auto p-4 space-y-6">
@@ -243,7 +193,7 @@ export default function SkillDetailsView({
                 </div>
               </div>
 
-              {isOwner && (
+              {isCurrentOwner && (
                 <div className="bg-blue-50 p-4 rounded-lg flex gap-3">
                   <Info className="h-5 w-5 text-blue-500" />
                   <p className="text-sm text-blue-700">
@@ -261,17 +211,19 @@ export default function SkillDetailsView({
               <h2 className="text-lg font-semibold mb-4">Skill Provider</h2>
 
               <div className="flex items-start gap-3 mb-4">
-                <Avatar className="h-16 w-16">
-                  <AvatarImage src={providerAvatar} alt={providerName} />
-                  <AvatarFallback>{providerName.charAt(0)}</AvatarFallback>
-                </Avatar>
+                <UserAvatar
+                  firstName={owner?.firstName}
+                  lastName={owner?.lastName}
+                  avatar={owner?.avatar}
+                  size="lg"
+                />
                 <div className="flex-1">
                   <h3 className="font-semibold mb-1">{providerName}</h3>
                   <div className="flex items-center gap-1 text-sm mb-2">
                     <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span className="font-medium">{providerRating}</span>
+                    <span className="font-medium">{averageRating}</span>
                     <span className="text-gray-500">
-                      ({providerReviewCount} reviews)
+                      ({totalReviews} reviews)
                     </span>
                   </div>
                   <p className="text-sm text-gray-600">{providerLocation}</p>
@@ -282,7 +234,7 @@ export default function SkillDetailsView({
                 {providerBio}
               </p>
 
-              {!isOwner && (
+              {!isCurrentOwner && (
                 <>
                   <Button
                     onClick={() => setShowBookingModal(true)}
@@ -304,116 +256,7 @@ export default function SkillDetailsView({
           </div>
         )}
       </div>
-
-      {showBookingModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="max-w-md w-full p-6">
-            <h2 className="text-2xl font-bold mb-4">Request Booking</h2>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Preferred Date
-                </label>
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  min={new Date().toISOString().split("T")[0]}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Preferred Time
-                </label>
-                <input
-                  type="time"
-                  value={selectedTime}
-                  onChange={(e) => setSelectedTime(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="schedule">Preferred Schedule *</Label>
-                <Input
-                  id="schedule"
-                  placeholder="e.g., Weekends, flexible hours"
-                  value={formData.preferredSchedule}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      preferredSchedule: e.target.value,
-                    })
-                  }
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Session Type
-                </label>
-                <div className="flex gap-3">
-                  <Button
-                    onClick={() => setBookingType("Online")}
-                    variant={bookingType === "Online" ? "default" : "outline"}
-                    className={
-                      bookingType === "Online"
-                        ? "bg-purple-600 hover:bg-purple-700"
-                        : ""
-                    }
-                  >
-                    Online
-                  </Button>
-                  <Button
-                    onClick={() => setBookingType("In-Person")}
-                    variant={
-                      bookingType === "In-Person" ? "default" : "outline"
-                    }
-                    className={
-                      bookingType === "In-Person"
-                        ? "bg-purple-600 hover:bg-purple-700"
-                        : ""
-                    }
-                  >
-                    In-Person
-                  </Button>
-                  <Button
-                    onClick={() => setBookingType("Hybrid")}
-                    variant={bookingType === "Hybrid" ? "default" : "outline"}
-                    className={
-                      bookingType === "Hybrid"
-                        ? "bg-purple-600 hover:bg-purple-700"
-                        : ""
-                    }
-                  >
-                    Hybrid
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-3 mt-6">
-              <Button
-                variant="outline"
-                onClick={() => setShowBookingModal(false)}
-                className="flex-1"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleBooking}
-                className="flex-1 bg-purple-600 hover:bg-purple-700"
-              >
-                Send Request
-              </Button>
-            </div>
-          </Card>
-        </div>
-      )}
-
+      {/* Reviews */}
       {showReviews && (
         <Card>
           <CardContent className="p-6">
@@ -423,7 +266,9 @@ export default function SkillDetailsView({
             </h2>
 
             {reviewsLoading ? (
-              <p className="text-slate-500">Loading reviews...</p>
+              <>
+                <LoadingSkeleton />
+              </>
             ) : reviews && reviews.length > 0 ? (
               <div className="space-y-4">
                 {reviews.map((review) => (
@@ -432,12 +277,12 @@ export default function SkillDetailsView({
                     className="border-b border-slate-100 pb-4 last:border-0 last:pb-0"
                   >
                     <div className="flex items-start gap-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={getReviewerAvatar(review)} />
-                        <AvatarFallback>
-                          {getInitials(getReviewerName(review))}
-                        </AvatarFallback>
-                      </Avatar>
+                      <UserAvatar
+                        firstName={owner?.firstName}
+                        lastName={owner?.lastName}
+                        avatar={owner?.avatar}
+                        size="md"
+                      />
                       <div className="flex-1">
                         <div className="flex items-center justify-between">
                           <p className="font-medium">
@@ -462,7 +307,7 @@ export default function SkillDetailsView({
                           </p>
                         )}
                         <p className="mt-1 text-xs text-slate-400">
-                          {formatDate(review.createdAt)}
+                          {formatDateTime(review.createdAt, "short")}
                         </p>
                       </div>
                     </div>
@@ -477,6 +322,10 @@ export default function SkillDetailsView({
           </CardContent>
         </Card>
       )}
+      <CreateBookingDialogBox
+        showCreateModal={showBookingModal}
+        setShowCreateModal={setShowBookingModal}
+      />
     </div>
   );
 }

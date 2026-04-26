@@ -1,4 +1,4 @@
-import ForgotPassword from "@/components/blocks/forgot-password/forgot-password";
+import ForgotPassword from "@/components/blocks/auth/ForgotPassword";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {

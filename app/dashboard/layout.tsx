@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 import Navbar from "@/components/ui/nav/navbar-dash";
-import UserSidebar from "@/components/ui/nav/sidebar";
+import UserSidebar from "@/components/ui/nav/UserSidebar";
 import { MockStateProvider } from "@/hooks/GlobalState";
 
 // `Metadata` is a Next.js type.

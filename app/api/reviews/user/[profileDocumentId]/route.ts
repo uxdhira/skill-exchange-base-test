@@ -42,15 +42,18 @@ export async function GET(
     const reviewsResult = await reviewsResponse.json();
 
     if (!reviewsResponse.ok) {
-      return NextResponse.json(reviewsResult, { status: reviewsResponse.status });
+      return NextResponse.json(reviewsResult, {
+        status: reviewsResponse.status,
+      });
     }
 
     const reviews = reviewsResult.data || [];
     const totalReviews = reviews.length;
 
     let totalRating = 0;
-    reviews.forEach((review: { attributes: { rating: number } }) => {
-      totalRating += review.attributes?.rating || 0;
+
+    reviews.forEach((review: any) => {
+      totalRating += review.rating || 0;
     });
 
     const averageRating =

@@ -14,7 +14,6 @@ export async function POST(request: NextRequest) {
         { status: 400 },
       );
     }
-    console.log({ username, email, password, firstName, lastName });
     const response = await fetch(`${STRAPI_URL}/api/auth/local/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

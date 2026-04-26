@@ -1,5 +1,5 @@
 import Footer from "@/components/blocks/footer/footer";
-import Header, { NavigationSection } from "@/components/ui/nav/header";
+import Header, { NavigationSection } from "@/components/ui/nav/Header";
 import { MockStateProvider } from "@/hooks/GlobalState";
 import SkillsProvider from "@/providers/skills-provider";
 

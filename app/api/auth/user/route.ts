@@ -1,15 +1,19 @@
+// app/api/auth/user/route.ts
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-const STRAPI_URL = process.env.NEXT_PUBLIC_API_URL;
-
+const STRAPI_URL = process.env.NEXT_PUBLIC_API_URL!;
+async function getToken() {
+  const cookieStore = await cookies();
+  return cookieStore.get("strapi-jwt")?.value;
+}
 export async function GET() {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("strapi-jwt");
+    const token = await getToken();
 
-    if (!token?.value) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    // Not logged in → explicit 401
+    if (!token) {
+      return NextResponse.json(null, { status: 401 });
     }
 
     const response = await fetch(
@@ -17,19 +21,21 @@ export async function GET() {
       {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${token.value}`,
+          Authorization: `Bearer ${token}`,
         },
       },
     );
 
+    if (response.status === 401) {
+      return NextResponse.json(null, { status: 401 });
+    }
+
     if (!response.ok) {
-      if (response.status === 401) {
-        return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-      }
       throw new Error("Failed to fetch user");
     }
 
     const user = await response.json();
+
     return NextResponse.json(user);
   } catch (error) {
     console.error("Get user error:", error);

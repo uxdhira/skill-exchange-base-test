@@ -1,8 +1,8 @@
 "use client";
 
-import SkillCard from "@/components/shared/Card/SkillCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import SkillCard from "@/components/ui/card/SkillCard";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -11,22 +11,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import LoadingSkeleton from "@/components/ui/skeleton/LoadingSkeleton";
 import { useCategories } from "@/hooks/categories";
+import { useDebounce } from "@/hooks/custom/useDebounce";
 import { useSkills } from "@/hooks/skill";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-// debounce hook
-function useDebounce(value: string, delay = 400) {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const t = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(t);
-  }, [value, delay]);
-  return debounced;
-}
-
-const RenderSkills = () => {
+const RenderSkills = ({ urlPrefix }: { urlPrefix: string }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -139,17 +131,12 @@ const RenderSkills = () => {
       {/* Grid */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {isLoading
-          ? Array.from({ length: 6 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-48 bg-gray-200 animate-pulse rounded-xl"
-              />
-            ))
+          ? Array.from({ length: 6 }).map((_, i) => <LoadingSkeleton key={i} />)
           : skills.map((skill) => (
               <SkillCard
                 key={skill.documentId}
                 skill={skill}
-                directUrl={`/skill/${skill.id}`}
+                directUrl={`/${urlPrefix}/${skill.documentId}`}
               />
             ))}
       </div>

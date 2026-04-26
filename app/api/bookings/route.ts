@@ -1,7 +1,6 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-import qs from "qs";
 import { normalizeBooking } from "./_utils";
 const STRAPI_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -57,22 +56,7 @@ export async function GET() {
     }
 
     const params = new URLSearchParams();
-    const query = qs.stringify(
-      {
-        populate: {
-          requestedSkill: {
-            populate: {
-              owner: "*",
-              category: "*",
-              image: "*",
-            },
-          },
-        },
-      },
-      {
-        encodeValuesOnly: true, // prettify URL
-      },
-    );
+
     // ✅ CORE LOGIC: provider OR requester match
     params.append(
       "filters[$or][0][provider][documentId][$eq]",
@@ -82,12 +66,6 @@ export async function GET() {
       "filters[$or][1][requester][documentId][$eq]",
       profileDocumentId,
     );
-
-    // Minimal populate (add more only if needed)
-    // params.append("populate[provider]", "*");
-    // params.append("populate[requester]", "*");
-    // params.append("populate[requestedSkill]", "*");
-    // params.append("populate[providedSkill]", "*");
 
     const response = await fetch(
       `${STRAPI_URL}/api/bookings?populate[requestedSkill][populate][0]=owner&populate[requester][populate][0]=avatar&populate[providedSkill][populate][0]=owner&populate[provider][populate][0]=avatar`,

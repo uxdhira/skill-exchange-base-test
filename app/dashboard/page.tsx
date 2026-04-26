@@ -1,9 +1,12 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { mockBookings } from "@/data/mockData";
+import LoadingSkeleton from "@/components/ui/skeleton/LoadingSkeleton";
 import { useCurrentUser } from "@/hooks/auth";
+import { useBookings } from "@/hooks/bookings";
+import { useCurrentProfile } from "@/hooks/profile";
 import { useOwnerSkills } from "@/hooks/skill";
+import { formatDateTime } from "@/lib/utility";
 import { Award, Calendar, Star, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
@@ -22,22 +25,23 @@ export default function DashboardHomePage() {
     isLoading: skillsLoading,
     error: skillsError,
   } = useOwnerSkills(user?.profile?.documentId || "");
+  const { data: bookings = [], isLoading, error } = useBookings();
+  const {
+    data: profile,
+    isLoading: profileLoading,
+    error: profileError,
+  } = useCurrentProfile(user?.profile?.documentId);
   // Only show skills posted by the logged-in user.
   const mySkills = skillsData?.data || [];
   // Show bookings where the user is either the sender or the receiver.
-  const myBookings = mockBookings.filter(
+  const myBookings = bookings.filter(
     (booking) =>
-      booking.requesterId === user?.id || booking.providerId === user?.id,
+      booking.requester?.documentId === user?.profile?.documentId ||
+      booking.provider?.documentId === user?.profile?.documentId,
   );
 
   if (userLoading || skillsLoading) {
-    return (
-      <div className="space-y-6 w-full">
-        <div className="text-center py-12">
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSkeleton />;
   }
 
   if (userError || skillsError) {
@@ -84,8 +88,8 @@ export default function DashboardHomePage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {false &&
-                myBookings.filter((b) => b.status !== "rejected").length}
+              {myBookings &&
+                myBookings.filter((b) => b.bookingStatus !== "rejected").length}
             </div>
           </CardContent>
         </Card>
@@ -98,7 +102,7 @@ export default function DashboardHomePage() {
             <Star className="w-4 h-4 text-yellow-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{user?.rating}</div>
+            <div className="text-2xl font-bold">{profile?.averageRating}</div>
           </CardContent>
         </Card>
 
@@ -110,7 +114,7 @@ export default function DashboardHomePage() {
             <TrendingUp className="w-4 h-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{user?.reviewCount}</div>
+            <div className="text-2xl font-bold">{profile?.totalReviews}</div>
           </CardContent>
         </Card>
       </div>
@@ -129,11 +133,11 @@ export default function DashboardHomePage() {
               >
                 <div
                   className={`w-2 h-2 rounded-full mt-2 ${
-                    booking.status === "accepted"
+                    booking.bookingStatus === "accepted"
                       ? "bg-green-500"
-                      : booking.status === "pending"
+                      : booking.bookingStatus === "pending"
                         ? "bg-yellow-500"
-                        : booking.status === "rejected"
+                        : booking.bookingStatus === "rejected"
                           ? "bg-red-500"
                           : "bg-blue-500"
                   }`}
@@ -142,9 +146,10 @@ export default function DashboardHomePage() {
                   <div className="flex items-start justify-between">
                     <div>
                       <p className="font-medium">
-                        {booking.requesterId === user?.id
-                          ? `Booking request sent for "${booking.skillTitle}"`
-                          : `Received booking request for "${booking.skillTitle}"`}
+                        {booking.requester?.documentId ===
+                        user?.profile?.documentId
+                          ? `Booking request sent for "${booking.requestedSkill?.title}"`
+                          : `Received booking request for "${booking.providedSkill?.title}"`}
                       </p>
                       <p className="text-sm text-gray-600 mt-1">
                         {booking.message}
@@ -152,20 +157,20 @@ export default function DashboardHomePage() {
                     </div>
                     <span
                       className={`text-xs px-2 py-1 rounded-full ${
-                        booking.status === "accepted"
+                        booking.bookingStatus === "accepted"
                           ? "bg-green-100 text-green-700"
-                          : booking.status === "pending"
+                          : booking.bookingStatus === "pending"
                             ? "bg-yellow-100 text-yellow-700"
-                            : booking.status === "rejected"
+                            : booking.bookingStatus === "rejected"
                               ? "bg-red-100 text-red-700"
                               : "bg-blue-100 text-blue-700"
                       }`}
                     >
-                      {booking.status}
+                      {booking.bookingStatus}
                     </span>
                   </div>
                   <p className="text-xs text-gray-500 mt-2">
-                    {booking.createdAt}
+                    {formatDateTime(booking.createdAt, "short")}
                   </p>
                 </div>
               </div>

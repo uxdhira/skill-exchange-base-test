@@ -1,6 +1,6 @@
-import Skills from "@/components/blocks/category/explorecategory";
 import Features from "@/components/blocks/feature/howwork";
 import AgencyHeroSection from "@/components/blocks/hero";
+import SkillsWithCategories from "@/components/blocks/skill/SkillsWithCategories";
 import { fetchCategories } from "@/lib/backend/fetch-categories";
 import { fetchSkills } from "@/lib/backend/fetch-skills";
 
@@ -17,7 +17,10 @@ export default async function Home() {
   return (
     <>
       <AgencyHeroSection /> <Features />
-      <Skills skillsData={skillsData.data} categories={categories} />
+      <SkillsWithCategories
+        skillsData={skillsData.data}
+        categories={categories}
+      />
     </>
   );
 }

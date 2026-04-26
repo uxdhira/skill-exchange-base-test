@@ -53,9 +53,9 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
 
-    const page = searchParams.get("page") || "1";
-    const pageSize = searchParams.get("pageSize") || "9";
-
+    const page = Number(searchParams.get("page")) || 1;
+    const pageSize = Number(searchParams.get("pageSize")) || 9;
+    const sort = searchParams.get("sort") || "createdAt:desc";
     const search = searchParams.get("search") || "";
     const category = searchParams.get("category") || "";
     const location = searchParams.get("location") || "";
@@ -77,7 +77,6 @@ export async function GET(request: NextRequest) {
     if (location) {
       filters += `&filters[location][$containsi]=${location}`;
     }
-    const sort = searchParams.get("sort") || "createdAt:desc";
 
     const response = await fetchFromStrapi(
       `/api/skills?pagination[page]=${page}&pagination[pageSize]=${pageSize}${filters}&sort=${sort}&populate=*`,

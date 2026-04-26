@@ -29,39 +29,39 @@ export async function fetchSkills(page = 1, pageSize = 100) {
 //     staleTime: 1000 * 60 * 5,
 //   });
 // }
-export function useSkills(params: {
-  page: number;
-  pageSize: number;
-  search?: string;
-  category?: string;
-  location?: string;
-  sort: string;
-}) {
+export function useSkills(
+  params: Partial<{
+    page: number;
+    pageSize: number;
+    search: string;
+    category: string;
+    location: string;
+    sort: string;
+  }> = {},
+) {
+  const {
+    page = 1,
+    pageSize = 9,
+    search = "",
+    category = "",
+    location = "",
+    sort = "createdAt:desc",
+  } = params;
+
   const query = new URLSearchParams();
 
-  query.set("page", String(params.page));
-  query.set("pageSize", String(params.pageSize));
-  query.set("sort", params.sort);
+  query.set("page", String(page));
+  query.set("pageSize", String(pageSize));
+  query.set("sort", sort);
 
-  if (params.search) query.set("search", params.search);
-  if (params.category) query.set("category", params.category);
-  if (params.location) query.set("location", params.location);
+  if (search) query.set("search", search);
+  if (category) query.set("category", category);
+  if (location) query.set("location", location);
 
   return useQuery({
-    queryKey: [
-      "skills",
-      params.page,
-      params.pageSize,
-      params.search || "",
-      params.category || "",
-      params.location || "",
-      params.sort,
-    ],
+    queryKey: ["skills", page, pageSize, search, category, location, sort],
     queryFn: async ({ signal }) => {
-      const res = await fetch(`/api/skills?${query.toString()}`, {
-        signal,
-      });
-
+      const res = await fetch(`/api/skills?${query.toString()}`, { signal });
       return res.json();
     },
     keepPreviousData: true,

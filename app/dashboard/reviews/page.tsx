@@ -1,8 +1,29 @@
+"use client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { mockReviews } from "@/data/mockData";
+import { useCurrentUser } from "@/hooks/auth";
+import { useUserReviewsStats } from "@/hooks/reviews";
+import { formatDateTime } from "@/lib/utility";
 import { Star } from "lucide-react";
 
 export default function MyReviews() {
+  const {
+    data: user,
+    isLoading: userLoading,
+    error: userError,
+  } = useCurrentUser();
+  const profileDocumentId = user?.profile?.documentId || "";
+
+  const {
+    data: reviewsData = [],
+    isLoading,
+    error,
+  } = useUserReviewsStats(profileDocumentId);
+
+  const reviews = reviewsData?.reviews ?? [];
+
+  const averageRating = Number(reviewsData?.averageRating || 0);
+
+  const totalReviews = reviews?.length;
   return (
     <div className="space-y-6">
       <div>
@@ -12,7 +33,7 @@ export default function MyReviews() {
         </p>
       </div>
 
-      {mockReviews.length === 0 ? (
+      {reviews?.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
             <Star className="w-16 h-16 mx-auto mb-4 text-gray-400" />
@@ -23,17 +44,20 @@ export default function MyReviews() {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
-          {mockReviews.map((review) => (
-            <Card key={review.id}>
-              <CardHeader>
+        <div className="space-y-2">
+          {reviews?.map((review) => (
+            <Card key={review.id} className="gap-2">
+              <CardHeader className="py-0 space-y-0">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <CardTitle className="text-lg mb-1">
-                      {review.skillTitle}
+                      {review.skill?.title}
                     </CardTitle>
                     <p className="text-sm text-gray-600">
-                      Review by {review.reviewerName}
+                      Review by{" "}
+                      {review.fromUser?.firstName +
+                        " " +
+                        review.fromUser?.lastName}
                     </p>
                   </div>
                   <div className="flex items-center gap-1">
@@ -50,9 +74,11 @@ export default function MyReviews() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
-                <p className="text-gray-700 mb-3">{review.comment}</p>
-                <p className="text-sm text-gray-500">{review.createdAt}</p>
+              <CardContent className="m-0">
+                <p className="text-gray-700 ">{review.comment}</p>
+                <p className="text-sm text-gray-500">
+                  {formatDateTime(review.createdAt, "short")}
+                </p>
               </CardContent>
             </Card>
           ))}
@@ -64,46 +90,55 @@ export default function MyReviews() {
         <CardHeader>
           <CardTitle>Rating Summary</CardTitle>
         </CardHeader>
+
         <CardContent>
           <div className="flex items-center gap-8">
+            {/* LEFT SIDE */}
             <div className="text-center">
-              <div className="text-5xl font-bold text-blue-600">4.8</div>
+              <div className="text-5xl font-bold text-blue-600">
+                {averageRating.toFixed(1)}
+              </div>
+
+              {/* STARS (based on average rating) */}
               <div className="flex items-center justify-center gap-1 mt-2">
-                {[...Array(5)].map((_, i) => (
+                {[1, 2, 3, 4, 5].map((i) => (
                   <Star
                     key={i}
                     className={`w-5 h-5 ${
-                      i < 5
+                      i <= Math.round(averageRating)
                         ? "fill-yellow-400 text-yellow-400"
                         : "text-gray-300"
                     }`}
                   />
                 ))}
               </div>
+
               <p className="text-sm text-gray-600 mt-2">
-                {mockReviews.length} reviews
+                {totalReviews} reviews
               </p>
             </div>
 
+            {/* RIGHT SIDE - DISTRIBUTION */}
             <div className="flex-1 space-y-2">
               {[5, 4, 3, 2, 1].map((stars) => {
-                const count = mockReviews.filter(
-                  (r) => r.rating === stars,
+                const count = reviews.filter(
+                  (r: any) => r.rating === stars,
                 ).length;
+
                 const percentage =
-                  mockReviews.length > 0
-                    ? (count / mockReviews.length) * 100
-                    : 0;
+                  totalReviews > 0 ? (count / totalReviews) * 100 : 0;
 
                 return (
                   <div key={stars} className="flex items-center gap-3">
                     <span className="text-sm w-8">{stars} ★</span>
+
                     <div className="flex-1 bg-gray-200 rounded-full h-2">
                       <div
                         className="bg-yellow-400 h-2 rounded-full"
                         style={{ width: `${percentage}%` }}
                       />
                     </div>
+
                     <span className="text-sm text-gray-600 w-12 text-right">
                       {count}
                     </span>

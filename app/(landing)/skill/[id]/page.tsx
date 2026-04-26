@@ -29,8 +29,8 @@ export async function generateMetadata({
   }
 
   return {
-    title: `${skill.title} - SkillSpill`,
-    description: skill.description || "Explore this skill on SkillSpill",
+    title: `${skill?.title} - SkillSpill`,
+    description: skill?.description || "Explore this skill on SkillSpill",
   };
 }
 // Find the skill by id and render its full details page.
